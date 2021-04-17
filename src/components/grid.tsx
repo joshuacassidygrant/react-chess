@@ -16,7 +16,7 @@ type CellProps = {
 }
 
 
-export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells}): ReactElement => {
+export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, children}): ReactElement => {
 
     const [cellsMap, setCellsMap] = useState<CellProps[][]>([]);
 
@@ -29,7 +29,6 @@ export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells}):
             }
             map[x] = row;
         }
-        console.log(map)
         setCellsMap(map);
     }, [height, width, xWidthCells, yHeightCells])
 
@@ -37,14 +36,13 @@ export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells}):
     const cellWidth = width / xWidthCells;
 
     return (
-        <div style={{width: width + "px", height: height + "px"}}>
-            <svg width="100%" height="100%">
-                {
-                    flatten(cellsMap).map((cell: CellProps) => 
-                        <rect x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} height={cellHeight} fill={cell.color}/>
-                    )
-                }
-            </svg>
-        </div>
+        <>
+            {
+                flatten(cellsMap).map((cell: CellProps) => 
+                    <rect x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} height={cellHeight} fill={cell.color}/>
+                )
+            }
+            {children}
+        </>
     )
 }
