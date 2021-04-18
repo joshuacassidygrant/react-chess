@@ -41,7 +41,18 @@ export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHei
         <g transform={`translate(${xOffset},${yOffset})`}>
             {
                 flatten(cellsMap).map((cell: CellProps) => 
-                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} height={cellHeight} fill={cell.color}/>
+                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} stroke="white" strokeWidth={0} height={cellHeight} fill={cell.color}>
+                            <animate attributeName="opacity"
+                               to="0.5" begin="mouseover" dur="0.35s" fill="freeze"/>
+                            <animate attributeName="stroke-width"
+                               to="2" begin="mouseover" dur="0.15s" fill="freeze"/>
+
+                            <animate attributeName="opacity"
+                                to="1" begin="mouseout" dur="0.35s" fill="freeze"/>
+                            <animate attributeName="stroke-width"
+                               to="0" begin="mouseout" dur="0.15s" fill="freeze"/>
+                               
+                    </rect>
                 )
             }
             {children}
