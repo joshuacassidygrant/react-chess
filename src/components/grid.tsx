@@ -39,7 +39,7 @@ export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, c
         <>
             {
                 flatten(cellsMap).map((cell: CellProps) => 
-                    <rect x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} height={cellHeight} fill={cell.color}/>
+                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} height={cellHeight} fill={cell.color}/>
                 )
             }
             {children}

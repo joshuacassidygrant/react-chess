@@ -1,4 +1,4 @@
-import React, {FC, ReactElement} from "react";
+import React, {useState, FC, ReactElement} from "react";
 import {Grid} from "./grid";
 import {Token} from "./token";
 import {Pawn, Bishop, Knight, Queen, King, Rook} from  "./pieces/piece";
@@ -12,15 +12,50 @@ type BoardProps = {
 }
 
 export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHeightCells}): ReactElement => {
+
+    const white = "#eee";
+    const black = "#111";
+
+    const cellSize = {x: boardWidth/xWidthCells, y: boardHeight/yHeightCells}
+
+    const [tokenMap, setTokenMap] = useState({
+        p1: { xC: 1, yC: 3, piece: Pawn, color: white},
+        b1: { xC: 3, yC: 4, piece: Bishop, color: black}
+    });
+
+    const [mousePos, setMousePos] = useState({
+        x: 0, y:0
+    })
+
+    const [selectedToken, setSelectedToken] = useState<string>("");
+
     return (
-        <svg style={{width: boardWidth, height: boardHeight, margin: "50px auto"}}>
+        <svg style={{width: boardWidth, height: boardHeight, margin: "50px auto"}} 
+            onMouseUp={() => {
+                if(!selectedToken) return;
+                setSelectedToken("");
+                
+            }}
+            onMouseMove={(e) => {
+                if (!selectedToken) return;
+                setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
+            }}
+        >
             <Grid height={boardHeight} width={boardWidth} xWidthCells={xWidthCells} yHeightCells={yHeightCells}/>
-            <Token x={300} y={300} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Pawn} color="#f6f6f6"/>
-            <Token x={200} y={200} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Bishop} color="#f6f6f6"/>
-            <Token x={150} y={400} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Knight} color="#f6f6f6"/>
-            <Token x={50} y={200} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Queen} color="#f6f6f6"/>
-            <Token x={100} y={300} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={King} color="#f6f6f6"/>
-            <Token x={450} y={200} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Rook} color="#f6f6f6"/>
+            {
+                Object.entries(tokenMap).map(([id, token]) => (
+                    <Token 
+                        key={id} id={id} 
+                        x={selectedToken === id ? mousePos.x : token.xC * cellSize.x} y={selectedToken === id ? mousePos.y : token.yC * cellSize.y} 
+                        w={cellSize.x} h={cellSize.y} piece={token.piece} color={token.color}
+                        clicked={(e, id) =>{
+                            setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
+                            setSelectedToken(id);
+                        }}
+                    />
+                ))
+            }
+           
         </svg>
     )
 }
