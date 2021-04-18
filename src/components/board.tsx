@@ -1,9 +1,9 @@
 import React, {useState, FC, ReactElement, useEffect} from "react";
 import {getOr} from "lodash/fp";
-import {Grid, GridProps, getGridCoordinates} from "./grid";
+import {Grid, GridProps, getGridCoordinates, coordinateInGridBounds} from "./grid";
 import {Token} from "./token";
 import {startState} from "./game/start";
-import {Position, Coordinate} from "../types";
+import {Position, Coordinate, getPosition} from "../types";
 import {TokenMap, TokenData} from "../types";
 
 type BoardProps = {
@@ -36,16 +36,23 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
     });
 
     useEffect(() => {
-        setGridProps({...gridProps, legalCells});
+        setGridProps(g => { return {...g, legalCells}});
     }, [legalCells])
 
     return (
         <svg style={{width: boardWidth + 2 * gridProps.xCellWidth, height: boardHeight + 2 * gridProps.yCellHeight, margin: `${gridProps.yCellHeight} auto`, backgroundColor:"#26312a"}} 
-            onMouseUp={() => {
+            onMouseUp={(e) => {
                 if(!selectedToken) return;
-                setSelectedToken("");
                 const tokenData: TokenData = tokenMap[selectedToken];
-                setTokenMap(changeTokenData(tokenMap, {[selectedToken]: {...tokenData, coord: {...hoverCell, grid: gridProps}}}));
+
+                if(!coordinateInGridBounds(hoverCell)) {
+                    const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: {...tokenData, coord: undefined, pos: pos}}));
+                } else if (hoverCell != null) {
+                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: {...tokenData, coord: {...hoverCell, grid: gridProps}}}));
+                }
+
+                setSelectedToken("");
                 setLegalCells([]);
             }}
             onMouseMove={(e) => {
@@ -53,7 +60,6 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                 const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
                 setMousePos(pos);
                 setHoverCell(getGridCoordinates(pos, gridProps));
-                
                 const token = getOr(null, selectedToken, tokenMap);
                 if (!token) return;
                 setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, gridProps));
@@ -64,7 +70,7 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                 Object.entries(tokenMap).map(([id, token]) => (
                     <Token 
                         key={id} id={id} 
-                        x={selectedToken === id ? mousePos.x : token.coord.x * gridProps.xCellWidth} y={selectedToken === id ? mousePos.y : token.coord.y * gridProps.yCellHeight} 
+                        x={selectedToken === id ? mousePos.x : getPosition(token).x} y={selectedToken === id ? mousePos.y : getPosition(token).y} 
                         w={gridProps.xCellWidth} h={gridProps.yCellHeight} piece={token.piece} color={token.color}
                         clicked={(e, id) =>{
                             setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
@@ -78,6 +84,6 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
     )
 }
 
-function changeTokenData(map: TokenMap, changes: TokenMap): TokenMap {
+function updateTokenData(map: TokenMap, changes: TokenMap): TokenMap {
     return {...map, ...changes};
 }

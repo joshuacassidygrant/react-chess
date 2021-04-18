@@ -66,9 +66,22 @@ export function gridQuantizePosition(pos: Position, grid: GridProps): Position {
 }
 
 export function getGridCoordinates(pos: Position, grid: GridProps): Coordinate {
-    return {x: Math.floor(pos.x/grid.xCellWidth), y: Math.floor(pos.y/grid.yCellHeight), grid};
+    return {x: Math.floor((pos.x - grid.xOffset)/grid.xCellWidth), y: Math.floor((pos.y - grid.yOffset)/grid.yCellHeight), grid};
 }
 
-function inLegalCells(legalCells: Coordinate[], x: number, y: number): boolean {
+export function getPositionFromCoordinates(coords: Coordinate): Position {
+    return {x: coords.x * coords.grid.xCellWidth + coords.grid.xOffset, y: coords.y * coords.grid.yCellHeight + coords.grid.yOffset};
+}
+
+export function inLegalCells(legalCells: Coordinate[], x: number, y: number): boolean {
     return !!legalCells.find(c => c.x === x && c.y === y);
+}
+
+export function inGridBounds(pos: Position, grid: GridProps): boolean {
+    return coordinateInGridBounds(getGridCoordinates(pos, grid));
+    
+}
+
+export function coordinateInGridBounds(coords: Coordinate): boolean {
+    return coords.x >= 0 && coords.y >= 0 && coords.x < coords.grid.xWidthCells && coords.y < coords.grid.yHeightCells;
 }
