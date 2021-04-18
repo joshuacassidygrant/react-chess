@@ -1,7 +1,8 @@
-import React, {FC, ReactElement} from "react";
+import React, {useState, FC, ReactElement} from "react";
+import {getOr} from "lodash/fp";
 import {Grid} from "./grid";
 import {Token} from "./token";
-import {Pawn, Bishop, Knight, Queen, King, Rook} from  "./pieces/piece";
+import {startState} from "./game/start";
 
 type BoardProps = {
     boardWidth: number,
@@ -10,17 +11,69 @@ type BoardProps = {
     yHeightCells: number
     
 }
+ 
+type Position = {
+    x: number,
+    y: number
+}
+
+type Coordinate = {
+    x: number,
+    y: number    
+}
 
 export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHeightCells}): ReactElement => {
+
+    const cellSize = {x: boardWidth/xWidthCells, y: boardHeight/yHeightCells}
+
+    const [tokenMap, setTokenMap] = useState(startState);
+
+    const [mousePos, setMousePos] = useState<Position>({
+        x:0, y:0
+    })
+    const [hoverCell, setHoverCell] = useState<Coordinate>({
+        x:0, y:0
+    })
+    const [selectedToken, setSelectedToken] = useState<string>("");
+
     return (
-        <svg style={{width: boardWidth, height: boardHeight, margin: "50px auto"}}>
+        <svg style={{width: boardWidth, height: boardHeight, margin: "50px auto"}} 
+            onMouseUp={() => {
+                if(!selectedToken) return;
+                setSelectedToken("");
+                setTokenMap({...tokenMap, [selectedToken]: {...getOr({}, selectedToken, tokenMap), coord: {...hoverCell}}});
+            }}
+            onMouseMove={(e) => {
+                if (!selectedToken) return;
+                const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+                setMousePos(pos);
+                setHoverCell(getGridCoordinates(pos, cellSize.x, cellSize.y));
+                console.log(getGridCoordinates(pos, cellSize.x, cellSize.y));
+            }}
+        >
             <Grid height={boardHeight} width={boardWidth} xWidthCells={xWidthCells} yHeightCells={yHeightCells}/>
-            <Token x={300} y={300} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Pawn} color="#f6f6f6"/>
-            <Token x={200} y={200} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Bishop} color="#f6f6f6"/>
-            <Token x={150} y={400} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Knight} color="#f6f6f6"/>
-            <Token x={50} y={200} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Queen} color="#f6f6f6"/>
-            <Token x={100} y={300} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={King} color="#f6f6f6"/>
-            <Token x={450} y={200} w={boardWidth/xWidthCells} h={boardHeight/yHeightCells} piece={Rook} color="#f6f6f6"/>
+            {
+                Object.entries(tokenMap).map(([id, token]) => (
+                    <Token 
+                        key={id} id={id} 
+                        x={selectedToken === id ? mousePos.x : token.coord.x * cellSize.x} y={selectedToken === id ? mousePos.y : token.coord.y * cellSize.y} 
+                        w={cellSize.x} h={cellSize.y} piece={token.piece} color={token.color}
+                        clicked={(e, id) =>{
+                            setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
+                            setSelectedToken(id);
+                        }}
+                    />
+                ))
+            }
+           
         </svg>
     )
+}
+
+function gridQuantizePosition(pos: Position, cellWidth: number, cellHeight: number): Position {
+    return {x:pos.x - pos.x % cellWidth, y:pos.y - pos.y % cellHeight};
+}
+
+function getGridCoordinates(pos: Position, cellWidth: number, cellHeight: number): Coordinate {
+    return {x: Math.floor(pos.x/cellWidth), y: Math.floor(pos.y/cellHeight)};
 }

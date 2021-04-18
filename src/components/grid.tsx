@@ -25,7 +25,7 @@ export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, c
         for (let x : number = 0; x <xWidthCells; x++) {
             const row = []
             for (let y: number = 0; y < yHeightCells; y++) {
-                row.push({x, y, color: (x + y) % 2 === 0 ? "#444499" : "#999944"} as CellProps);
+                row.push({x, y, color: (x + y) % 2 === 0 ? "#966633" : "#D6B693"} as CellProps);
             }
             map[x] = row;
         }
@@ -39,7 +39,7 @@ export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, c
         <>
             {
                 flatten(cellsMap).map((cell: CellProps) => 
-                    <rect x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} height={cellHeight} fill={cell.color}/>
+                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} height={cellHeight} fill={cell.color}/>
                 )
             }
             {children}
