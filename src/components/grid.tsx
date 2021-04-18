@@ -1,14 +1,17 @@
 
 import React, {FC, ReactElement, useState, useEffect} from "react";
 import {flatten} from "lodash/fp";
+import {Position, Coordinate} from "../types";
 
-type GridProps = {
+export type GridProps = {
     height: number,
     width: number,
     xWidthCells: number,
     yHeightCells: number,
     xOffset: number,
-    yOffset: number
+    yOffset: number,
+    xCellWidth: number,
+    yCellHeight: number
 }
 
 type CellProps = {
@@ -18,7 +21,7 @@ type CellProps = {
 }
 
 
-export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHeightCells, xOffset, yOffset, children}): ReactElement => {
+export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHeightCells, xOffset, yOffset, xCellWidth, yCellHeight, children}): ReactElement => {
 
     const [cellsMap, setCellsMap] = useState<CellProps[][]>([]);
 
@@ -34,21 +37,18 @@ export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHei
         setCellsMap(map);
     }, [height, width, xWidthCells, yHeightCells])
 
-    const cellHeight = height/ yHeightCells;
-    const cellWidth = width / xWidthCells;
-
     return (
         <g transform={`translate(${xOffset},${yOffset})`}>
             {
                 flatten(cellsMap).map((cell: CellProps) => 
-                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} stroke="white" strokeWidth={0} height={cellHeight} fill={cell.color}>
+                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * xCellWidth} y={cell.y * yCellHeight} width={xCellWidth}  height={yCellHeight} stroke="white" strokeWidth={0} fill={cell.color}>
                             <animate attributeName="opacity"
-                               to="0.5" begin="mouseover" dur="0.35s" fill="freeze"/>
+                               to="0.5" begin="mouseover" dur="0.15s" fill="freeze"/>
                             <animate attributeName="stroke-width"
                                to="2" begin="mouseover" dur="0.15s" fill="freeze"/>
 
                             <animate attributeName="opacity"
-                                to="1" begin="mouseout" dur="0.35s" fill="freeze"/>
+                                to="1" begin="mouseout" dur="0.15s" fill="freeze"/>
                             <animate attributeName="stroke-width"
                                to="0" begin="mouseout" dur="0.15s" fill="freeze"/>
                                
@@ -59,3 +59,11 @@ export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHei
         </g>
     )
 })
+
+export function gridQuantizePosition(pos: Position, grid: GridProps): Position {
+    return {x:pos.x - (pos.x % grid.xCellWidth) + grid.xOffset, y:pos.y - (pos.y % grid.yCellHeight) + grid.yOffset};
+}
+
+export function getGridCoordinates(pos: Position, grid: GridProps): Coordinate {
+    return {x: Math.floor(pos.x/grid.xCellWidth), y: Math.floor(pos.y/grid.yCellHeight), grid};
+}
