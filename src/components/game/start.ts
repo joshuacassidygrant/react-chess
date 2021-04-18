@@ -20,7 +20,6 @@ export const startState = {
     wq1: { coord: {x:4, y:7}, piece: Queen, color: white},
     wk1: { coord: {x:3, y:7}, piece: King, color: white},
 
-
     bp0: { coord: {x:0, y:1}, piece: Pawn, color: black},
     bp1: { coord: {x:1, y:1}, piece: Pawn, color: black},
     bp2: { coord: {x:2, y:1}, piece: Pawn, color: black},
