@@ -11,7 +11,8 @@ export type GridProps = {
     xOffset: number,
     yOffset: number,
     xCellWidth: number,
-    yCellHeight: number
+    yCellHeight: number,
+    legalCells: Coordinate[]
 }
 
 type CellProps = {
@@ -21,7 +22,7 @@ type CellProps = {
 }
 
 
-export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHeightCells, xOffset, yOffset, xCellWidth, yCellHeight, children}): ReactElement => {
+export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHeightCells, xOffset, yOffset, xCellWidth, yCellHeight, legalCells, children}): ReactElement => {
 
     const [cellsMap, setCellsMap] = useState<CellProps[][]>([]);
 
@@ -41,7 +42,7 @@ export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHei
         <g transform={`translate(${xOffset},${yOffset})`}>
             {
                 flatten(cellsMap).map((cell: CellProps) => 
-                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * xCellWidth} y={cell.y * yCellHeight} width={xCellWidth}  height={yCellHeight} stroke="white" strokeWidth={0} fill={cell.color}>
+                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * xCellWidth} y={cell.y * yCellHeight} width={xCellWidth}  height={yCellHeight} stroke="white" strokeWidth={0} fill={inLegalCells(legalCells, cell.x, cell.y) ? "red": cell.color}>
                             <animate attributeName="opacity"
                                to="0.5" begin="mouseover" dur="0.15s" fill="freeze"/>
                             <animate attributeName="stroke-width"
@@ -66,4 +67,8 @@ export function gridQuantizePosition(pos: Position, grid: GridProps): Position {
 
 export function getGridCoordinates(pos: Position, grid: GridProps): Coordinate {
     return {x: Math.floor(pos.x/grid.xCellWidth), y: Math.floor(pos.y/grid.yCellHeight), grid};
+}
+
+function inLegalCells(legalCells: Coordinate[], x: number, y: number): boolean {
+    return !!legalCells.find(c => c.x === x && c.y === y);
 }
