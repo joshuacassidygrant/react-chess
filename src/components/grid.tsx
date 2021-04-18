@@ -18,7 +18,7 @@ type CellProps = {
 }
 
 
-export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, xOffset, yOffset, children}): ReactElement => {
+export const Grid: FC<GridProps> = React.memo(({height, width, xWidthCells, yHeightCells, xOffset, yOffset, children}): ReactElement => {
 
     const [cellsMap, setCellsMap] = useState<CellProps[][]>([]);
 
@@ -47,4 +47,4 @@ export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, x
             {children}
         </g>
     )
-}
+})

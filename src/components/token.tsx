@@ -12,7 +12,7 @@ type TokenProps = {
     clicked: (e: React.MouseEvent, id: string) => void
 }
 
-export const Token: FC<TokenProps> = ({id, x, y, color, piece, w, h, clicked}): ReactElement => {
+export const Token: FC<TokenProps> = React.memo(({id, x, y, color, piece, w, h, clicked}): ReactElement => {
     const xs = w/256;
     const ys = h/256;
     return (
@@ -25,4 +25,4 @@ export const Token: FC<TokenProps> = ({id, x, y, color, piece, w, h, clicked}): 
             }
         </g>
     )
-}
+})
