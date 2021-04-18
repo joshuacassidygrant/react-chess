@@ -1,7 +1,8 @@
 import React, {useState, FC, ReactElement} from "react";
+import {getOr} from "lodash/fp";
 import {Grid} from "./grid";
 import {Token} from "./token";
-import {Pawn, Bishop, Knight, Queen, King, Rook} from  "./pieces/piece";
+import {startState} from "./game/start";
 
 type BoardProps = {
     boardWidth: number,
@@ -9,6 +10,16 @@ type BoardProps = {
     xWidthCells: number,
     yHeightCells: number
     
+}
+ 
+type Position = {
+    x: number,
+    y: number
+}
+
+type Coordinate = {
+    x: number,
+    y: number    
 }
 
 export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHeightCells}): ReactElement => {
@@ -18,15 +29,14 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
 
     const cellSize = {x: boardWidth/xWidthCells, y: boardHeight/yHeightCells}
 
-    const [tokenMap, setTokenMap] = useState({
-        p1: { xC: 1, yC: 3, piece: Pawn, color: white},
-        b1: { xC: 3, yC: 4, piece: Bishop, color: black}
-    });
+    const [tokenMap, setTokenMap] = useState(startState);
 
-    const [mousePos, setMousePos] = useState({
+    const [mousePos, setMousePos] = useState<Position>({
         x: 0, y:0
     })
-
+    const [hoverCell, setHoverCell] = useState<Coordinate>({
+        x:0, y:0
+    })
     const [selectedToken, setSelectedToken] = useState<string>("");
 
     return (
@@ -34,11 +44,14 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
             onMouseUp={() => {
                 if(!selectedToken) return;
                 setSelectedToken("");
-                
+                setTokenMap({...tokenMap, [selectedToken]: {...getOr({}, selectedToken, tokenMap), coord: {...hoverCell}}});
             }}
             onMouseMove={(e) => {
                 if (!selectedToken) return;
-                setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
+                const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+                setMousePos(pos);
+                setHoverCell(getGridCoordinates(pos, cellSize.x, cellSize.y));
+                console.log(getGridCoordinates(pos, cellSize.x, cellSize.y));
             }}
         >
             <Grid height={boardHeight} width={boardWidth} xWidthCells={xWidthCells} yHeightCells={yHeightCells}/>
@@ -46,7 +59,7 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                 Object.entries(tokenMap).map(([id, token]) => (
                     <Token 
                         key={id} id={id} 
-                        x={selectedToken === id ? mousePos.x : token.xC * cellSize.x} y={selectedToken === id ? mousePos.y : token.yC * cellSize.y} 
+                        x={selectedToken === id ? mousePos.x : token.coord.x * cellSize.x} y={selectedToken === id ? mousePos.y : token.coord.y * cellSize.y} 
                         w={cellSize.x} h={cellSize.y} piece={token.piece} color={token.color}
                         clicked={(e, id) =>{
                             setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
@@ -58,4 +71,12 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
            
         </svg>
     )
+}
+
+function gridQuantizePosition(pos: Position, cellWidth: number, cellHeight: number): Position {
+    return {x:pos.x - pos.x % cellWidth, y:pos.y - pos.y % cellHeight};
+}
+
+function getGridCoordinates(pos: Position, cellWidth: number, cellHeight: number): Coordinate {
+    return {x: Math.floor(pos.x/cellWidth), y: Math.floor(pos.y/cellHeight)};
 }
