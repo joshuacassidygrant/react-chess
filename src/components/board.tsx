@@ -24,9 +24,6 @@ type Coordinate = {
 
 export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHeightCells}): ReactElement => {
 
-    const white = "#eee";
-    const black = "#111";
-
     const cellSize = {x: boardWidth/xWidthCells, y: boardHeight/yHeightCells}
 
     const [tokenMap, setTokenMap] = useState(startState);
