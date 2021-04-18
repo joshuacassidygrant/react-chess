@@ -37,7 +37,7 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
     const [selectedToken, setSelectedToken] = useState<string>("");
 
     return (
-        <svg style={{width: boardWidth, height: boardHeight, margin: "50px auto"}} 
+        <svg style={{width: boardWidth + 2 * cellSize.x, height: boardHeight + 2 * cellSize.y, margin: `${cellSize.y} auto`, backgroundColor:"#26312a"}} 
             onMouseUp={() => {
                 if(!selectedToken) return;
                 setSelectedToken("");
@@ -48,10 +48,9 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                 const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
                 setMousePos(pos);
                 setHoverCell(getGridCoordinates(pos, cellSize.x, cellSize.y));
-                console.log(getGridCoordinates(pos, cellSize.x, cellSize.y));
-            }}
+            }} 
         >
-            <Grid height={boardHeight} width={boardWidth} xWidthCells={xWidthCells} yHeightCells={yHeightCells}/>
+            <Grid height={boardHeight} width={boardWidth} xWidthCells={xWidthCells} yHeightCells={yHeightCells} xOffset={cellSize.x} yOffset={cellSize.y}/>
             {
                 Object.entries(tokenMap).map(([id, token]) => (
                     <Token 

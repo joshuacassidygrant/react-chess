@@ -15,7 +15,6 @@ type TokenProps = {
 export const Token: FC<TokenProps> = ({id, x, y, color, piece, w, h, clicked}): ReactElement => {
     const xs = w/256;
     const ys = h/256;
-
     return (
         <g transform={`translate(${x}, ${y})`} onMouseDown={(e) => clicked(e, id)}>
             <circle fill="rgba(1,1,1,0.2)" r={w/2} cx={w/2} cy={h/2} />

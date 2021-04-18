@@ -7,6 +7,8 @@ type GridProps = {
     width: number,
     xWidthCells: number,
     yHeightCells: number,
+    xOffset: number,
+    yOffset: number
 }
 
 type CellProps = {
@@ -16,7 +18,7 @@ type CellProps = {
 }
 
 
-export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, children}): ReactElement => {
+export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, xOffset, yOffset, children}): ReactElement => {
 
     const [cellsMap, setCellsMap] = useState<CellProps[][]>([]);
 
@@ -36,13 +38,13 @@ export const Grid: FC<GridProps> = ({height, width, xWidthCells, yHeightCells, c
     const cellWidth = width / xWidthCells;
 
     return (
-        <>
+        <g transform={`translate(${xOffset},${yOffset})`}>
             {
                 flatten(cellsMap).map((cell: CellProps) => 
                     <rect key={`c${cell.x}${cell.y}`} x={cell.x * cellWidth} y={cell.y * cellHeight} width={cellWidth} height={cellHeight} fill={cell.color}/>
                 )
             }
             {children}
-        </>
+        </g>
     )
 }
