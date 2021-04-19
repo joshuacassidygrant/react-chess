@@ -27,3 +27,8 @@ export function makeLine(xDelta: number, yDelta: number, token: TokenData, token
     return moves;
 
 }
+
+export function makeJump(xDelta: number, yDelta:number, coord: Coordinate, blockingColor: string, tokenMap: TokenMap): Coordinate[] {
+    const newCoord = {x: coord.x + xDelta, y:coord.y + yDelta, grid: coord.grid};
+    return !pieceOfColorAtCoordinate(newCoord, blockingColor, tokenMap) ? [newCoord] : [];
+}
