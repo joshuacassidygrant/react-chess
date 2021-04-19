@@ -4,6 +4,7 @@ import {flatten} from "lodash/fp";
 import {Position, Coordinate} from "../types";
 
 export type GridProps = {
+    id: string,
     height: number,
     width: number,
     xWidthCells: number,

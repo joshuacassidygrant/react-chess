@@ -3,7 +3,7 @@ import {getOr} from "lodash/fp";
 import {Grid, GridProps, getGridCoordinates, coordinateInGridBounds} from "./grid";
 import {Token} from "./token";
 import {startState} from "./game/start";
-import {Position, Coordinate, getPosition} from "../types";
+import {Position, Coordinate} from "../types";
 import {TokenMap, TokenData} from "../types";
 
 type BoardProps = {
@@ -25,6 +25,7 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
     const [selectedToken, setSelectedToken] = useState<string>("");
     
     const [gridProps, setGridProps] = useState<GridProps>({
+        id: "chessGrid",
         height: boardHeight, width: boardWidth, 
         xWidthCells: xWidthCells, yHeightCells: yHeightCells, 
         xCellWidth:  boardWidth/xWidthCells, yCellHeight: boardHeight/yHeightCells,
@@ -47,9 +48,9 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
 
                 if(!coordinateInGridBounds(hoverCell)) {
                     const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: {...tokenData, coord: undefined, pos: pos}}));
+                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
                 } else if (hoverCell != null) {
-                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: {...tokenData, coord: {...hoverCell, grid: gridProps}}}));
+                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}));
                 }
 
                 setSelectedToken("");
@@ -70,7 +71,7 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                 Object.entries(tokenMap).map(([id, token]) => (
                     <Token 
                         key={id} id={id} 
-                        x={selectedToken === id ? mousePos.x : getPosition(token).x} y={selectedToken === id ? mousePos.y : getPosition(token).y} 
+                        x={selectedToken === id ? mousePos.x : token.getPosition().x} y={selectedToken === id ? mousePos.y : token.getPosition().y} 
                         w={gridProps.xCellWidth} h={gridProps.yCellHeight} piece={token.piece} color={token.color}
                         clicked={(e, id) =>{
                             setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
