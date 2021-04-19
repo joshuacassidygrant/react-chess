@@ -5,6 +5,8 @@ import {Token} from "./token";
 import {startState} from "./game/start";
 import {Position, Coordinate} from "../types";
 import {TokenMap, TokenData} from "../types";
+import {getOpponent} from "./game/players";
+import {maybeCaptureTokenOfColorAtCoordinate, updateTokenData} from "../utils/tokenMapUtils";
 
 type BoardProps = {
     boardWidth: number,
@@ -49,8 +51,13 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                 if(!coordinateInGridBounds(hoverCell)) {
                     const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
                     setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
-                } else if (hoverCell != null) {
-                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}));
+                } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
+                    setTokenMap(
+                        updateTokenData(
+                            maybeCaptureTokenOfColorAtCoordinate(hoverCell, getOpponent(tokenData.color), tokenMap), 
+                            {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}
+                        )
+                    );
                 }
 
                 setSelectedToken("");
@@ -85,6 +92,6 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
     )
 }
 
-function updateTokenData(map: TokenMap, changes: TokenMap): TokenMap {
-    return {...map, ...changes};
+function coordinateInList(coord: Coordinate, listCoords: Coordinate[]): boolean {
+    return !!listCoords.find(entry => entry && entry.x === coord.x && entry.y === coord.y && entry.grid.id === coord.grid.id);
 }
