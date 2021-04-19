@@ -5,8 +5,8 @@ import {Token} from "./token";
 import {startState} from "./game/start";
 import {Position, Coordinate} from "../types";
 import {TokenMap, TokenData} from "../types";
-import {getOpponent} from "./game/players";
 import {maybeCaptureTokenOfColorAtCoordinate, updateTokenData} from "../utils/tokenMapUtils";
+import { white, getOpponent} from "../components/game/players";
 
 type BoardProps = {
     boardWidth: number,
@@ -25,6 +25,7 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
     });
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [selectedToken, setSelectedToken] = useState<string>("");
+    const [turn, setTurn] = useState<string>(white);
     
     const [gridProps, setGridProps] = useState<GridProps>({
         id: "chessGrid",
@@ -43,6 +44,8 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
     }, [legalCells])
 
     return (
+        <div>
+            {turn === white ? "White" : "Black"}'s turn.
         <svg style={{width: boardWidth + 2 * gridProps.xCellWidth, height: boardHeight + 2 * gridProps.yCellHeight, margin: `${gridProps.yCellHeight} auto`, backgroundColor:"#26312a"}} 
             onMouseUp={(e) => {
                 if(!selectedToken) return;
@@ -58,6 +61,7 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                             {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}
                         )
                     );
+                    setTurn(getOpponent(turn));
                 }
 
                 setSelectedToken("");
@@ -82,13 +86,16 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                         w={gridProps.xCellWidth} h={gridProps.yCellHeight} piece={token.piece} color={token.color}
                         clicked={(e, id) =>{
                             setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
-                            setSelectedToken(id);
+                            if (tokenMap[id].color === turn) {
+                                setSelectedToken(id);
+                            }
                         }}
                     />
                 ))
             }
            
         </svg>
+        </div>
     )
 }
 
