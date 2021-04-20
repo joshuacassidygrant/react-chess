@@ -1,7 +1,5 @@
-import {Coordinate} from "./coordinate";
-import {Position} from "./position";
-import {Piece} from "../components/game/piece";
-import {getPositionFromCoordinates} from "../components/grid";
+import {Coordinate, Position} from "./index";
+import {Piece} from "../game/piece";
 
 export interface TokenMap {
     [id: string]: TokenData
@@ -11,16 +9,19 @@ export class TokenData {
     coord?: Coordinate;
     pos?: Position;
     piece: Piece;
-    color: string;
+    player: number;
+    isSelected: boolean;
 
-    constructor(piece: Piece, color: string, coord?: Coordinate) { 
+    constructor(piece: Piece, player: number, coord?: Coordinate) { 
         this.piece = piece;
-        this.color = color;
+        this.player = player;
         this.coord = coord;
+        this.isSelected = false;
     }
 
     getPosition(): Position {
-        if (this.coord) return getPositionFromCoordinates(this.coord);
+        if (this.isSelected && this.pos) return this.pos;
+        if (this.coord) return this.coord.grid.getPositionFromCoordinates(this.coord);
         if (this.pos) return this.pos;
         return {x: 0, y: 0}; // TODO hmm
     }

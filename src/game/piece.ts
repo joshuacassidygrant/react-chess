@@ -1,12 +1,10 @@
-import {Coordinate} from "../../types";
-import {pieceOfColorAtCoordinate, emptyCoordinate, colorFlip, makeLine, makeJump} from "../../utils/tokenMapUtils";
-import {GridProps} from "../grid";
-import {TokenMap} from "../../types";
-import {white, black, getOpponent} from "./players";
+import {Coordinate} from "../types";
+import {pieceOfColorAtCoordinate, emptyCoordinate, playerFlip, makeLine, makeJump, getOpponent} from "../utils";
+import {TokenMap, GridData} from "../types";
 
 export type Piece = {
     paths: string[],
-    getLegalMoves: (tokenKey: string, tokenMap: TokenMap, grid: GridProps) => Coordinate[]
+    getLegalMoves: (tokenKey: string, tokenMap: TokenMap, grid: GridData) => Coordinate[]
 }
 
 export const Pawn: Piece = {
@@ -14,16 +12,16 @@ export const Pawn: Piece = {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
         const c: Coordinate = token.coord;
-        const oneFrontCoord: Coordinate = {x: c.x, y:c.y - 1 * colorFlip(token.color), grid};
-        const twoFrontCoord: Coordinate = {x: c.x, y:c.y - 2 * colorFlip(token.color), grid};
-        const captureCoordLeft: Coordinate = {x: c.x - 1, y:c.y-1 * colorFlip(token.color), grid};
-        const captureCoordRight: Coordinate = {x: c.x + 1, y:c.y-1 * colorFlip(token.color), grid};
+        const oneFrontCoord: Coordinate = {x: c.x, y:c.y - 1 * playerFlip(token.player), grid};
+        const twoFrontCoord: Coordinate = {x: c.x, y:c.y - 2 * playerFlip(token.player), grid};
+        const captureCoordLeft: Coordinate = {x: c.x - 1, y:c.y-1 * playerFlip(token.player), grid};
+        const captureCoordRight: Coordinate = {x: c.x + 1, y:c.y-1 * playerFlip(token.player), grid};
 
         return [
                 ...(emptyCoordinate(oneFrontCoord, tokenMap)) ? [oneFrontCoord] : [],
-                ...(((token.coord.y === 6 && token.color === white) || (token.coord.y === 1 && token.color === black)) && emptyCoordinate(twoFrontCoord, tokenMap) && emptyCoordinate(oneFrontCoord, tokenMap)) ? [twoFrontCoord] : [],
-                ...(pieceOfColorAtCoordinate(captureCoordLeft, getOpponent(token.color), tokenMap)) ? [captureCoordLeft] : [],
-                ...(pieceOfColorAtCoordinate(captureCoordRight, getOpponent(token.color), tokenMap)) ? [captureCoordRight] : [],
+                ...(((token.coord.y === 6 && token.player === 0) || (token.coord.y === 1 && token.player === 1)) && emptyCoordinate(twoFrontCoord, tokenMap) && emptyCoordinate(oneFrontCoord, tokenMap)) ? [twoFrontCoord] : [],
+                ...(pieceOfColorAtCoordinate(captureCoordLeft, getOpponent(token.player), tokenMap)) ? [captureCoordLeft] : [],
+                ...(pieceOfColorAtCoordinate(captureCoordRight, getOpponent(token.player), tokenMap)) ? [captureCoordRight] : [],
                 //TODO: en passant, promotion
             ];
     },
@@ -52,14 +50,14 @@ export const Knight: Piece = {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
         return [
-            ...makeJump(1, 2, token.coord, token.color, tokenMap),
-            ...makeJump(2, 1, token.coord, token.color, tokenMap),
-            ...makeJump(-1, 2, token.coord, token.color, tokenMap),
-            ...makeJump(2, -1, token.coord, token.color, tokenMap),
-            ...makeJump(-1, -2, token.coord, token.color, tokenMap),
-            ...makeJump(-2, -1, token.coord, token.color, tokenMap),
-            ...makeJump(1, -2, token.coord, token.color, tokenMap),
-            ...makeJump(-2, 1, token.coord, token.color, tokenMap),
+            ...makeJump(1, 2, token.coord, token.player, tokenMap),
+            ...makeJump(2, 1, token.coord, token.player, tokenMap),
+            ...makeJump(-1, 2, token.coord, token.player, tokenMap),
+            ...makeJump(2, -1, token.coord, token.player, tokenMap),
+            ...makeJump(-1, -2, token.coord, token.player, tokenMap),
+            ...makeJump(-2, -1, token.coord, token.player, tokenMap),
+            ...makeJump(1, -2, token.coord, token.player, tokenMap),
+            ...makeJump(-2, 1, token.coord, token.player, tokenMap),
         ]
     },
     paths: [
@@ -74,14 +72,14 @@ export const King: Piece = {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
         return [
-            ...makeJump(1, 1, token.coord, token.color, tokenMap),
-            ...makeJump(0, 1, token.coord, token.color, tokenMap),
-            ...makeJump(-1, 1, token.coord, token.color, tokenMap),
-            ...makeJump(1, 0, token.coord, token.color, tokenMap),
-            ...makeJump(-1, 0, token.coord, token.color, tokenMap),
-            ...makeJump(1, -1, token.coord, token.color, tokenMap),
-            ...makeJump(0, -1, token.coord, token.color, tokenMap),
-            ...makeJump(-1, -1, token.coord, token.color, tokenMap),
+            ...makeJump(1, 1, token.coord, token.player, tokenMap),
+            ...makeJump(0, 1, token.coord, token.player, tokenMap),
+            ...makeJump(-1, 1, token.coord, token.player, tokenMap),
+            ...makeJump(1, 0, token.coord, token.player, tokenMap),
+            ...makeJump(-1, 0, token.coord, token.player, tokenMap),
+            ...makeJump(1, -1, token.coord, token.player, tokenMap),
+            ...makeJump(0, -1, token.coord, token.player, tokenMap),
+            ...makeJump(-1, -1, token.coord, token.player, tokenMap),
             //TODO: handle check, castling
         ]
     },
