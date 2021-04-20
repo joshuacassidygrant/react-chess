@@ -1,7 +1,7 @@
 import React from 'react';
 import reportWebVitals from "./reportWebVitals";
 import "./App.css";
-import {Board} from "./components/board";
+import {Game} from "./components/game";
 
 function App() {
   // temp
@@ -13,7 +13,7 @@ function App() {
         REACT CHESS by JOSHUA
       </header>
       <div className="Main">
-        <Board boardHeight={600} boardWidth={600} xWidthCells={8} yHeightCells={8}/>
+        <Game/>
       </div>
     </div>
   );
