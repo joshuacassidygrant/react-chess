@@ -1,5 +1,5 @@
 import React, {FC, ReactElement} from "react";
-import {Piece} from  "./game/piece";
+import {Piece} from  "../game/piece";
 
 type TokenProps = {
     id: string,

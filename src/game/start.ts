@@ -1,10 +1,9 @@
 import {Pawn, Bishop, Knight, Rook, King, Queen} from "./piece";
 import {white, black} from "./players";
-import {TokenData, TokenMap} from "../../types";
-import {GridProps} from "../grid";
+import {TokenData, TokenMap, GridData} from "../types";
 
 
-export function startState(grid: GridProps): TokenMap {
+export function startState(grid: GridData): TokenMap {
     return {
         wp0: new TokenData(Pawn, white, {x:0, y:6, grid }),
         wp1: new TokenData(Pawn, white, {x:1, y:6, grid }),

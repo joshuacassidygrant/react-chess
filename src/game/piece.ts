@@ -1,12 +1,11 @@
-import {Coordinate} from "../../types";
-import {pieceOfColorAtCoordinate, emptyCoordinate, colorFlip, makeLine, makeJump} from "../../utils/tokenMapUtils";
-import {GridProps} from "../grid";
-import {TokenMap} from "../../types";
-import {white, black, getOpponent} from "./players";
+import {Coordinate} from "../types";
+import {pieceOfColorAtCoordinate, emptyCoordinate, colorFlip, makeLine, makeJump, getOpponent} from "../utils";
+import {TokenMap, GridData} from "../types";
+import {white, black} from "./players";
 
 export type Piece = {
     paths: string[],
-    getLegalMoves: (tokenKey: string, tokenMap: TokenMap, grid: GridProps) => Coordinate[]
+    getLegalMoves: (tokenKey: string, tokenMap: TokenMap, grid: GridData) => Coordinate[]
 }
 
 export const Pawn: Piece = {

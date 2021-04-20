@@ -1,7 +1,7 @@
 import {Coordinate} from "./coordinate";
 import {Position} from "./position";
-import {Piece} from "../components/game/piece";
-import {getPositionFromCoordinates} from "../components/grid";
+import {Piece} from "../game/piece";
+import {getPositionFromCoordinates} from "../utils";
 
 export interface TokenMap {
     [id: string]: TokenData
