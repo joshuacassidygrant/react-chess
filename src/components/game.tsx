@@ -1,22 +1,19 @@
-import React, {FC, ReactElement, useState, useEffect} from "react";
+import React, {FC, ReactElement, useState} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, Position, GridData} from "../types/";
 import {startState} from "../game/start";
-import {GridProps} from "./grid";
 import { white } from "../game/players";
-import {maybeCaptureTokenOfColorAtCoordinate, updateTokenData, coordinateInList, getOpponent,  getGridCoordinates, coordinateInGridBounds} from "../utils/";
+import {maybeCaptureTokenOfColorAtCoordinate, updateTokenData, coordinateInList, getOpponent} from "../utils/";
 import {getOr} from "lodash/fp";
-
-type GameProps = {
-    height: number,
-    width: number
-}
 
 const xWidthCells:number = 8;
 const yHeightCells:number = 8;
+const height:number = 600;
+const width:number = 600;
+const grid = new GridData("chessGrid", height, width, xWidthCells, yHeightCells);
 
-export const Game: FC<GameProps> = ({height, width}): ReactElement => {
-    const grid = new GridData("chessGrid", height, width, xWidthCells, yHeightCells);
+
+export const Game: FC = (): ReactElement => {
 
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [turn, setTurn] = useState<string>(white);
@@ -33,7 +30,10 @@ export const Game: FC<GameProps> = ({height, width}): ReactElement => {
 
     return (
         <div>
-            {turn === white ? "White" : "Black"}'s turn.
+            <div>
+                {turn === white ? "White" : "Black"}'s turn.
+            </div>
+            <div>
             <Board 
                 tokenMap={tokenMap} gridData={grid} mousePos={mousePos} selectedToken={selectedToken} legalCells={legalCells}
                 mouseUp={
@@ -41,7 +41,7 @@ export const Game: FC<GameProps> = ({height, width}): ReactElement => {
                         if(!selectedToken) return;
                         const tokenData: TokenData = tokenMap[selectedToken];
         
-                        if(!coordinateInGridBounds(hoverCell)) {
+                        if(!grid.coordinateInGridBounds(hoverCell)) {
                             const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
                             setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
                         } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
@@ -63,7 +63,7 @@ export const Game: FC<GameProps> = ({height, width}): ReactElement => {
                         if (!selectedToken) return;
                         const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
                         setMousePos(pos);
-                        setHoverCell(getGridCoordinates(pos, grid));
+                        setHoverCell(grid.getGridCoordinates(pos));
                         const token = getOr(null, selectedToken, tokenMap);
                         if (!token) return;
                         setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, grid));
@@ -77,6 +77,8 @@ export const Game: FC<GameProps> = ({height, width}): ReactElement => {
                         }
                     }
                 }/>
+            </div>
+
         </div>
     )
 

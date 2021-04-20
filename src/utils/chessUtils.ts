@@ -1,6 +1,6 @@
 import {white, black} from "../game/players";
 import {TokenData, TokenMap, Coordinate} from "../types";
-import {emptyCoordinate, coordinateInGridBounds, pieceOfColorAtCoordinate} from "./index";
+import {emptyCoordinate, pieceOfColorAtCoordinate} from "./index";
 
 export function getOpponent(color: string) {
     return color === white ? black : white;
@@ -14,7 +14,7 @@ export function makeLine(xDelta: number, yDelta: number, token: TokenData, token
     const moves: Coordinate[] = [];
     if (!token.coord) return moves;
     let current: Coordinate = {x: token.coord.x + xDelta, y: token.coord.y + yDelta, grid: token.coord.grid};
-    while (emptyCoordinate(current, tokenMap) && coordinateInGridBounds(current)) {
+    while (emptyCoordinate(current, tokenMap) && token.coord.grid.coordinateInGridBounds(current)) {
         moves.push(current);
         current = {x: current.x + xDelta, y: current.y + yDelta, grid: token.coord.grid};
     }
@@ -35,4 +35,8 @@ export function maybeCaptureTokenOfColorAtCoordinate(coord: Coordinate, captureC
     if (!capture) return tokenMap;
     delete tokenMap[capture[0]];
     return tokenMap;
+}
+
+export function inLegalCells(legalCells: Coordinate[], x: number, y: number): boolean {
+    return !!legalCells.find(c => c.x === x && c.y === y);
 }

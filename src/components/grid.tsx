@@ -1,4 +1,3 @@
-
 import React, {FC, ReactElement, useState, useEffect} from "react";
 import {flatten} from "lodash/fp";
 import { Coordinate, GridData} from "../types";
@@ -14,7 +13,6 @@ type CellProps = {
     y: number,
     color: string
 }
-
 
 export const Grid: FC<GridProps> = React.memo(({gridData, legalCells, children}): ReactElement => {
 

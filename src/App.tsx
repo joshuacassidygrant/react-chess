@@ -13,7 +13,7 @@ function App() {
         REACT CHESS by JOSHUA
       </header>
       <div className="Main">
-        <Game height={600} width={600}/>
+        <Game/>
       </div>
     </div>
   );

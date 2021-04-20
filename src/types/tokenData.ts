@@ -1,7 +1,5 @@
-import {Coordinate} from "./coordinate";
-import {Position} from "./position";
+import {Coordinate, Position} from "./index";
 import {Piece} from "../game/piece";
-import {getPositionFromCoordinates} from "../utils";
 
 export interface TokenMap {
     [id: string]: TokenData
@@ -20,7 +18,7 @@ export class TokenData {
     }
 
     getPosition(): Position {
-        if (this.coord) return getPositionFromCoordinates(this.coord);
+        if (this.coord) return this.coord.grid.getPositionFromCoordinates(this.coord);
         if (this.pos) return this.pos;
         return {x: 0, y: 0}; // TODO hmm
     }
