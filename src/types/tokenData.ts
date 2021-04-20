@@ -9,12 +9,12 @@ export class TokenData {
     coord?: Coordinate;
     pos?: Position;
     piece: Piece;
-    color: string;
+    player: number;
     isSelected: boolean;
 
-    constructor(piece: Piece, color: string, coord?: Coordinate) { 
+    constructor(piece: Piece, player: number, coord?: Coordinate) { 
         this.piece = piece;
-        this.color = color;
+        this.player = player;
         this.coord = coord;
         this.isSelected = false;
     }

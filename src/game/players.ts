@@ -1,3 +1,6 @@
+import { Player } from "../types";
 
-export const white = "#eee";
-export const black = "#111";
+export const Players = [
+    new Player("#eee", "White"),
+    new Player("#111", "Black")
+];

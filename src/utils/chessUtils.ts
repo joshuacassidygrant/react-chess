@@ -1,13 +1,12 @@
-import {white, black} from "../game/players";
 import {TokenData, TokenMap, Coordinate} from "../types";
 import {emptyCoordinate, pieceOfColorAtCoordinate} from "./index";
 
-export function getOpponent(color: string) {
-    return color === white ? black : white;
+export function getOpponent(player: number) {
+    return player ? 0 : 1;
 }
 
-export function colorFlip(color: string): number {
-    return color === white ? 1 : -1;
+export function playerFlip(player: number): number {
+    return player ? -1 : 1;
 }
 
 export function makeLine(xDelta: number, yDelta: number, token: TokenData, tokenMap: TokenMap): Coordinate[] {
@@ -18,19 +17,19 @@ export function makeLine(xDelta: number, yDelta: number, token: TokenData, token
         moves.push(current);
         current = {x: current.x + xDelta, y: current.y + yDelta, grid: token.coord.grid};
     }
-    if (pieceOfColorAtCoordinate(current, getOpponent(token.color), tokenMap)) moves.push(current);
+    if (pieceOfColorAtCoordinate(current, getOpponent(token.player), tokenMap)) moves.push(current);
 
     return moves;
 }
 
-export function makeJump(xDelta: number, yDelta:number, coord: Coordinate, blockingColor: string, tokenMap: TokenMap): Coordinate[] {
+export function makeJump(xDelta: number, yDelta:number, coord: Coordinate, blockingPlayer: number, tokenMap: TokenMap): Coordinate[] {
     const newCoord = {x: coord.x + xDelta, y:coord.y + yDelta, grid: coord.grid};
-    return !pieceOfColorAtCoordinate(newCoord, blockingColor, tokenMap) ? [newCoord] : [];
+    return !pieceOfColorAtCoordinate(newCoord, blockingPlayer, tokenMap) ? [newCoord] : [];
 }
 
-export function maybeCaptureTokenOfColorAtCoordinate(coord: Coordinate, captureColor: string, tokenMap: TokenMap): TokenMap {
+export function maybeCaptureTokenOfColorAtCoordinate(coord: Coordinate, capturePlayer: number, tokenMap: TokenMap): TokenMap {
     const capture = Object.entries(tokenMap).find(([key, entry]) => {
-        return entry.color === captureColor && entry.coord && entry.coord.x === coord.x && entry.coord.y === coord.y  && entry.coord.grid.id === coord.grid.id
+        return entry.player === capturePlayer && entry.coord && entry.coord.x === coord.x && entry.coord.y === coord.y  && entry.coord.grid.id === coord.grid.id
     });
     if (!capture) return tokenMap;
     delete tokenMap[capture[0]];

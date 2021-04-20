@@ -1,7 +1,7 @@
 import {Coordinate, TokenMap} from "../types";
 
-export function pieceOfColorAtCoordinate(coord: Coordinate, color: string, tokenMap: TokenMap): boolean {
-    return Object.values(tokenMap).find(entry => entry.color === color && coordinatesEqual(entry.coord, coord)) !== undefined;
+export function pieceOfColorAtCoordinate(coord: Coordinate, player: number, tokenMap: TokenMap): boolean {
+    return Object.values(tokenMap).find(entry => entry.player === player && coordinatesEqual(entry.coord, coord)) !== undefined;
 }
 
 export function emptyCoordinate(coord: Coordinate, tokenMap: TokenMap): boolean {

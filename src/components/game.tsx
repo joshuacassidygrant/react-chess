@@ -2,10 +2,9 @@ import React, {FC, ReactElement, useState} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData} from "../types/";
 import {startState} from "../game/start";
-import { white } from "../game/players";
 import {maybeCaptureTokenOfColorAtCoordinate, updateTokenData, coordinateInList, getOpponent} from "../utils/";
 import {getOr} from "lodash/fp";
-
+import {Players} from "../game/players";
 
 // GAME CONSTANTS
 const xWidthCells:number = 8;
@@ -18,7 +17,7 @@ const grid = new GridData("chessGrid", height, width, xWidthCells, yHeightCells)
 export const Game: FC = (): ReactElement => {
 
     const [selectedToken, setSelectedToken] = useState<string>("");
-    const [turn, setTurn] = useState<string>(white);
+    const [turn, setTurn] = useState<number>(0);
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [tokenMap, setTokenMap]= useState<TokenMap>(startState(grid));
     const [hoverCell, setHoverCell] = useState<Coordinate>({
@@ -28,7 +27,7 @@ export const Game: FC = (): ReactElement => {
     return (
         <div>
             <div>
-                {turn === white ? "White" : "Black"}'s turn.
+                {Players[turn].name}'s turn.
             </div>
             <div>
             <Board 
@@ -45,7 +44,7 @@ export const Game: FC = (): ReactElement => {
                         } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
                             setTokenMap(
                                 updateTokenData(
-                                    maybeCaptureTokenOfColorAtCoordinate(hoverCell, getOpponent(tokenData.color), tokenMap), 
+                                    maybeCaptureTokenOfColorAtCoordinate(hoverCell, getOpponent(tokenData.player), tokenMap), 
                                     {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}
                                 )
                             );
@@ -69,7 +68,7 @@ export const Game: FC = (): ReactElement => {
                 } 
                 tokenClick={
                     (e, id) =>{
-                        if (tokenMap[id].color === turn) {
+                        if (tokenMap[id].player === turn) {
                             setSelectedToken(id);
                             tokenMap[id].isSelected = true;
                         }
