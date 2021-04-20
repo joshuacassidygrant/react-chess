@@ -10,14 +10,17 @@ export class TokenData {
     pos?: Position;
     piece: Piece;
     color: string;
+    isSelected: boolean;
 
     constructor(piece: Piece, color: string, coord?: Coordinate) { 
         this.piece = piece;
         this.color = color;
         this.coord = coord;
+        this.isSelected = false;
     }
 
     getPosition(): Position {
+        if (this.isSelected && this.pos) return this.pos;
         if (this.coord) return this.coord.grid.getPositionFromCoordinates(this.coord);
         if (this.pos) return this.pos;
         return {x: 0, y: 0}; // TODO hmm
