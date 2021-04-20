@@ -1,9 +1,12 @@
-import React, {useState, FC, ReactElement} from "react";
+import React, {useState, FC, ReactElement, useEffect} from "react";
 import {getOr} from "lodash/fp";
-import {Grid, GridProps, getGridCoordinates} from "./grid";
+import {Grid, GridProps, getGridCoordinates, coordinateInGridBounds} from "./grid";
 import {Token} from "./token";
 import {startState} from "./game/start";
 import {Position, Coordinate} from "../types";
+import {TokenMap, TokenData} from "../types";
+import {maybeCaptureTokenOfColorAtCoordinate, updateTokenData} from "../utils/tokenMapUtils";
+import { white, getOpponent} from "../components/game/players";
 
 type BoardProps = {
     boardWidth: number,
@@ -14,34 +17,64 @@ type BoardProps = {
 }
 
 
+
 export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHeightCells}): ReactElement => {
 
-    const [gridProps] = useState<GridProps>({
-        height: boardHeight, width: boardWidth, 
-        xWidthCells: xWidthCells, yHeightCells: yHeightCells, 
-        xCellWidth:  boardWidth/xWidthCells, yCellHeight: boardHeight/yHeightCells,
-        xOffset: boardWidth/xWidthCells, yOffset: boardHeight/yHeightCells});
-    const [tokenMap, setTokenMap] = useState(startState);
     const [mousePos, setMousePos] = useState<Position>({
         x:0, y:0
     });
+    const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
+    const [selectedToken, setSelectedToken] = useState<string>("");
+    const [turn, setTurn] = useState<string>(white);
+    
+    const [gridProps, setGridProps] = useState<GridProps>({
+        id: "chessGrid",
+        height: boardHeight, width: boardWidth, 
+        xWidthCells: xWidthCells, yHeightCells: yHeightCells, 
+        xCellWidth:  boardWidth/xWidthCells, yCellHeight: boardHeight/yHeightCells,
+        xOffset: boardWidth/xWidthCells, yOffset: boardHeight/yHeightCells,
+        legalCells});
+    const [tokenMap, setTokenMap]= useState<TokenMap>(startState(gridProps));
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid: gridProps
     });
-    const [selectedToken, setSelectedToken] = useState<string>("");
+
+    useEffect(() => {
+        setGridProps(g => { return {...g, legalCells}});
+    }, [legalCells])
 
     return (
+        <div>
+            {turn === white ? "White" : "Black"}'s turn.
         <svg style={{width: boardWidth + 2 * gridProps.xCellWidth, height: boardHeight + 2 * gridProps.yCellHeight, margin: `${gridProps.yCellHeight} auto`, backgroundColor:"#26312a"}} 
-            onMouseUp={() => {
+            onMouseUp={(e) => {
                 if(!selectedToken) return;
+                const tokenData: TokenData = tokenMap[selectedToken];
+
+                if(!coordinateInGridBounds(hoverCell)) {
+                    const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
+                } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
+                    setTokenMap(
+                        updateTokenData(
+                            maybeCaptureTokenOfColorAtCoordinate(hoverCell, getOpponent(tokenData.color), tokenMap), 
+                            {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}
+                        )
+                    );
+                    setTurn(getOpponent(turn));
+                }
+
                 setSelectedToken("");
-                setTokenMap({...tokenMap, [selectedToken]: {...getOr({}, selectedToken, tokenMap), coord: {...hoverCell}}});
+                setLegalCells([]);
             }}
             onMouseMove={(e) => {
                 if (!selectedToken) return;
                 const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
                 setMousePos(pos);
                 setHoverCell(getGridCoordinates(pos, gridProps));
+                const token = getOr(null, selectedToken, tokenMap);
+                if (!token) return;
+                setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, gridProps));
             }} 
         >
             <Grid {...gridProps}/>
@@ -49,16 +82,23 @@ export const Board: FC<BoardProps> = ({boardWidth, boardHeight, xWidthCells, yHe
                 Object.entries(tokenMap).map(([id, token]) => (
                     <Token 
                         key={id} id={id} 
-                        x={selectedToken === id ? mousePos.x : token.coord.x * gridProps.xCellWidth} y={selectedToken === id ? mousePos.y : token.coord.y * gridProps.yCellHeight} 
+                        x={selectedToken === id ? mousePos.x : token.getPosition().x} y={selectedToken === id ? mousePos.y : token.getPosition().y} 
                         w={gridProps.xCellWidth} h={gridProps.yCellHeight} piece={token.piece} color={token.color}
                         clicked={(e, id) =>{
                             setMousePos({x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY});
-                            setSelectedToken(id);
+                            if (tokenMap[id].color === turn) {
+                                setSelectedToken(id);
+                            }
                         }}
                     />
                 ))
             }
            
         </svg>
+        </div>
     )
+}
+
+function coordinateInList(coord: Coordinate, listCoords: Coordinate[]): boolean {
+    return !!listCoords.find(entry => entry && entry.x === coord.x && entry.y === coord.y && entry.grid.id === coord.grid.id);
 }
