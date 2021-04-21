@@ -27,7 +27,7 @@ export const Game: FC = (): ReactElement => {
     return (
         <div>
             <div>
-                <GameInfo turn={turn}/>
+                <GameInfo turn={turn} captured={takenPieces}/>
             </div>
             <div>
             <Board 
