@@ -2,10 +2,9 @@ import React, {FC, ReactElement, useState} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData} from "../types/";
 import {startState} from "../game/start";
-import {maybeCaptureTokenOfColorAtCoordinate, updateTokenData, coordinateInList, getOpponent} from "../utils/";
+import {updateTokenData, coordinateInList, getOpponent, getTokenAtCoordinate, removeTokenData} from "../utils/";
 import {getOr} from "lodash/fp";
-import {Players} from "../game/players";
-
+import {GameInfo} from "./game-info";
 // GAME CONSTANTS
 const xWidthCells:number = 8;
 const yHeightCells:number = 8;
@@ -20,6 +19,7 @@ export const Game: FC = (): ReactElement => {
     const [turn, setTurn] = useState<number>(0);
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [tokenMap, setTokenMap]= useState<TokenMap>(startState(grid));
+    const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
@@ -27,7 +27,7 @@ export const Game: FC = (): ReactElement => {
     return (
         <div>
             <div>
-                {Players[turn].name}'s turn.
+                <GameInfo turn={turn}/>
             </div>
             <div>
             <Board 
@@ -42,13 +42,13 @@ export const Game: FC = (): ReactElement => {
                             setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
                             // TODO: this lets us leave tokens randomly off the board...
                         } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
-                            setTokenMap(
-                                updateTokenData(
-                                    maybeCaptureTokenOfColorAtCoordinate(hoverCell, getOpponent(tokenData.player), tokenMap), 
-                                    {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}
-                                )
-                            );
-                            setTurn(getOpponent(turn));
+                            const captureToken = getTokenAtCoordinate(hoverCell, tokenMap);
+                            if (captureToken !== undefined && captureToken[1].player === getOpponent(tokenData.player)) {
+                                setTokenMap(removeTokenData(tokenMap, captureToken[0]));
+                                setTakenPieces([...takenPieces, captureToken[1]]);
+                            }
+                            setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}));
+                            setTurn(turn + 1);
                         }
                         tokenMap[selectedToken].isSelected = false;
                         setSelectedToken("");
@@ -68,7 +68,7 @@ export const Game: FC = (): ReactElement => {
                 } 
                 tokenClick={
                     (e, id) =>{
-                        if (tokenMap[id].player === turn) {
+                        if (tokenMap[id].player === turn % 2) {
                             setSelectedToken(id);
                             tokenMap[id].isSelected = true;
                         }

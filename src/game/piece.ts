@@ -3,11 +3,13 @@ import {pieceOfColorAtCoordinate, emptyCoordinate, playerFlip, makeLine, makeJum
 import {TokenMap, GridData} from "../types";
 
 export type Piece = {
+    symbol: string,
     paths: string[],
     getLegalMoves: (tokenKey: string, tokenMap: TokenMap, grid: GridData) => Coordinate[]
 }
 
 export const Pawn: Piece = {
+    symbol:"♙",
     getLegalMoves: (tokenKey, tokenMap, grid) => {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
@@ -29,6 +31,7 @@ export const Pawn: Piece = {
 }
 
 export const Bishop: Piece = {
+    symbol:"♗",
     getLegalMoves: (tokenKey, tokenMap, grid) => {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
@@ -46,6 +49,7 @@ export const Bishop: Piece = {
 }
 
 export const Knight: Piece = {
+    symbol: "♘",
     getLegalMoves: (tokenKey, tokenMap, grid) => {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
@@ -68,6 +72,7 @@ export const Knight: Piece = {
 }
 
 export const King: Piece = {
+    symbol: "♔",
     getLegalMoves: (tokenKey, tokenMap, grid) => {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
@@ -87,6 +92,7 @@ export const King: Piece = {
 }
 
 export const Queen: Piece = {
+    symbol: "♕",
     getLegalMoves: (tokenKey, tokenMap, grid) => {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
@@ -105,6 +111,7 @@ export const Queen: Piece = {
 }
 
 export const Rook: Piece = {
+    symbol: "♖",
     getLegalMoves: (tokenKey, tokenMap, grid) => {
         const token = tokenMap[tokenKey];
         if (!token.coord) return [];
