@@ -14,7 +14,7 @@ type BoardProps = {
 
 export const Board: FC<BoardProps> = ({tokenMap, gridData, mouseMove, mouseUp, tokenClick, legalCells}): ReactElement => 
         (
-        <svg style={{width: gridData.width + 2 * gridData.xCellWidth, height: gridData.height + 2 * gridData.yCellHeight, margin: `${gridData.yCellHeight / 2} auto`, backgroundColor:"#26312a"}} 
+        <svg style={{width: gridData.width + 2 * gridData.xCellWidth, height: gridData.height + 2 * gridData.yCellHeight, margin: `0 auto`, backgroundColor:"#26312a"}} 
             onMouseUp={mouseUp}
             onMouseMove={mouseMove} 
         >
