@@ -1,4 +1,4 @@
-import {Coordinate, TokenMap, TokenData} from "../types";
+import {Coordinate, TokenMap, TokenData, CoordinateMove} from "../types";
 
 export function pieceOfColorAtCoordinate(coord: Coordinate, player: number, tokenMap: TokenMap): boolean {
     return Object.values(tokenMap).find(entry => entry.player === player && coordinatesEqual(entry.coord, coord)) !== undefined;
@@ -22,4 +22,11 @@ export function getTokenAtCoordinate(coord: Coordinate, tokenMap: TokenMap): [st
         return entry.coord && entry.coord.x === coord.x && entry.coord.y === coord.y  && entry.coord.grid.id === coord.grid.id;
     });
 }
- 
+
+export function toMove(turn: number, from: Coordinate, to: Coordinate): CoordinateMove {
+    return {
+        turn,
+        from: [from.x, from.y],
+        to: [to.x, to.y]
+    }
+}

@@ -1,5 +1,5 @@
-import {TokenData, TokenMap, Coordinate} from "../types";
-import {emptyCoordinate, pieceOfColorAtCoordinate} from "./index";
+import {TokenData, TokenMap, Coordinate, CoordinateMove, GridData} from "../types";
+import {emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, removeTokenData, updateTokenData} from "./index";
 
 export function getOpponent(player: number) {
     return player ? 0 : 1;
@@ -38,4 +38,18 @@ export function maybeCaptureTokenOfColorAtCoordinate(coord: Coordinate, captureP
 
 export function inLegalCells(legalCells: Coordinate[], x: number, y: number): boolean {
     return !!legalCells.find(c => c.x === x && c.y === y);
+}
+
+export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap, incrementTurn: (turn: number) => void, addTakenPiece: (d: TokenData) => void): TokenMap {
+    const token = getTokenAtCoordinate({x: move.from[0], y: move.from[1], grid}, tokenMap);
+    if(!token) return tokenMap;
+    const tokenData = token[1];
+    const captureToken = getTokenAtCoordinate({x: move.to[0], y: move.to[1], grid}, tokenMap);
+    if (captureToken !== undefined && captureToken[1].player === getOpponent(tokenData.player)) {
+        tokenMap = removeTokenData(tokenMap, captureToken[0]);
+        addTakenPiece(captureToken[1]);
+    }
+    incrementTurn(move.turn);
+    tokenMap = updateTokenData(tokenMap, {[token[0]]: tokenData.setCoordAndReturn({x: move.to[0], y: move.to[1], grid})});
+    return tokenMap;
 }

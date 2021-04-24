@@ -2,7 +2,7 @@ import React, {FC, ReactElement, useState, useEffect} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {updateTokenData, coordinateInList, getOpponent, getTokenAtCoordinate, removeTokenData} from "../utils/";
+import {updateTokenData, coordinateInList, doMove, toMove} from "../utils/";
 import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
 
@@ -28,30 +28,27 @@ export const Game: FC = (): ReactElement => {
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [tokenMap, setTokenMap]= useState<TokenMap>(startState(grid));
     const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
+    const [currentPlayer, setCurrentPlayer] = useState(0);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
 
+    const incrementTurn = (turn: number) => {
+        console.log("inc" + turn);
+        setTurn(turn + 1);
+    }
+
     useEffect(() => {
         socket.on("approved-move", function(move: CoordinateMove) {
-
-            const token = getTokenAtCoordinate({x: move.from[0], y: move.from[1], grid}, tokenMap);
-            if(!token) return;
-            const tokenData = token[1];
-            const captureToken = getTokenAtCoordinate({x: move.to[0], y: move.to[1], grid}, tokenMap);
-            if (captureToken !== undefined && captureToken[1].player === getOpponent(tokenData.player)) {
-                setTokenMap(removeTokenData(tokenMap, captureToken[0]));
-                setTakenPieces([...takenPieces, captureToken[1]]);
-            }
-            setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setCoordAndReturn({x: move.to[0], y: move.to[1], grid})}));
-            setTurn(turn + 1);
+            setTokenMap(tokenMap => doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
         });
     }, []);
 
     return (
         <div>
             <div>
-                <GameInfo turn={turn} captured={takenPieces}/>
+                <button onClick={() => {setCurrentPlayer((currentPlayer + 1) % 2)}}>Switch Player</button>
+                <GameInfo turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
             </div>
             <div>
             <Board 
@@ -68,16 +65,9 @@ export const Game: FC = (): ReactElement => {
                         } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
                             const originalCoord = tokenData.coord;
                             if (!originalCoord) return;
-
-                            const captureToken = getTokenAtCoordinate(hoverCell, tokenMap);
-                            if (captureToken !== undefined && captureToken[1].player === getOpponent(tokenData.player)) {
-                                setTokenMap(removeTokenData(tokenMap, captureToken[0]));
-                                setTakenPieces([...takenPieces, captureToken[1]]);
-                            }
-                            setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setCoordAndReturn(hoverCell)}));
-                            setTurn(turn + 1);
-                            
-                            emitMove(socket, originalCoord, hoverCell);
+                            const move = toMove(turn, originalCoord, hoverCell);
+                            setTokenMap(doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces([...takenPieces, d])}));
+                            emitMove(socket, move);
                         }
                         tokenMap[selectedToken].isSelected = false;
                         setSelectedToken("");
@@ -98,7 +88,7 @@ export const Game: FC = (): ReactElement => {
                 } 
                 tokenClick={
                     (e, id) =>{
-                        if (tokenMap[id].player === turn % 2) {
+                        if (turn % 2 === currentPlayer && tokenMap[id].player === turn % 2) {
                             setSelectedToken(id);
                             tokenMap[id].isSelected = true;
                         }
@@ -111,6 +101,6 @@ export const Game: FC = (): ReactElement => {
 
 }
 
-function emitMove(socket: any, from: Coordinate, to: Coordinate): void {
-    socket.emit("request-move", {from: [from.x, from.y], to: [to.x, to.y]});
+function emitMove(socket: any, move: CoordinateMove): void {
+    socket.emit("request-move", move);
 }

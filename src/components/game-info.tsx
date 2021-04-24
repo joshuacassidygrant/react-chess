@@ -4,20 +4,23 @@ import {TokenData} from "../types";
 
 type GameInfoProps = {
     turn: number,
-    captured: TokenData[]
+    captured: TokenData[],
+    currentPlayer: number
 }
 
-export const GameInfo: FC<GameInfoProps> = ({turn, captured}): ReactElement => {
+export const GameInfo: FC<GameInfoProps> = ({turn, captured, currentPlayer}): ReactElement => {
     return (
         <div style={{margin: "24px 0"}}>
             <div>
                 Turn {turn}, {Players[turn % 2].name}'s move.
             </div>
             <div style={{display:"flex"}}>
-                <div style={{width:"50%", fontSize: "24px", color: "#999", height: "30px"}}>
+                <div style={{width:"50%", fontSize: "24px", color: "#999", height: "42px"}}>
+                    WHITE {currentPlayer === 0 && "(YOU)"}<br/>
                     CAPTURED: {captured.filter(t => t.player === 0).map(t => t.piece.symbol)}
                 </div>
-                <div style={{width:"50%", fontSize: "24px", color: "#000", height: "30px"}}>
+                <div style={{width:"50%", fontSize: "24px", color: "#000", height: "42px"}}>
+                BLACK {currentPlayer === 1 && "(YOU)"}<br/>
                      {captured.filter(t => t.player === 1).map(t => t.piece.symbol)} :CAPTURED
                 </div>
             </div>
