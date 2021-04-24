@@ -2,9 +2,10 @@ import React, {FC, ReactElement, useState, useEffect} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {updateTokenData, coordinateInList, doMove, toMove} from "../utils/";
+import {updateTokenData, coordinateInList, doMove, toMove, emitMove} from "../utils/";
 import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
+import { StartPanel } from "./start-panel";
 
 const socketEndpoint = "http://localhost:3001";
 const io = require("socket.io-client");
@@ -28,13 +29,13 @@ export const Game: FC = (): ReactElement => {
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [tokenMap, setTokenMap]= useState<TokenMap>(startState(grid));
     const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
-    const [currentPlayer, setCurrentPlayer] = useState(0);
+    const [currentPlayer, setCurrentPlayer] = useState(-1);
+    const [currentRoom, setCurrentRoom] = useState("");
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
 
     const incrementTurn = (turn: number) => {
-        console.log("inc" + turn);
         setTurn(turn + 1);
     }
 
@@ -44,10 +45,12 @@ export const Game: FC = (): ReactElement => {
         });
     }, []);
 
+
     return (
         <div>
+            {currentRoom === ""  || currentPlayer === -1 ? (<StartPanel currentPlayer={currentPlayer} setCurrentPlayer={setCurrentPlayer} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} socket={socket} />) :
+            <>
             <div>
-                <button onClick={() => {setCurrentPlayer((currentPlayer + 1) % 2)}}>Switch Player</button>
                 <GameInfo turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
             </div>
             <div>
@@ -67,7 +70,7 @@ export const Game: FC = (): ReactElement => {
                             if (!originalCoord) return;
                             const move = toMove(turn, originalCoord, hoverCell);
                             setTokenMap(doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces([...takenPieces, d])}));
-                            emitMove(socket, move);
+                            emitMove(socket, currentRoom, move);
                         }
                         tokenMap[selectedToken].isSelected = false;
                         setSelectedToken("");
@@ -95,12 +98,10 @@ export const Game: FC = (): ReactElement => {
                     }
                 }/>
             </div>
+            </>
+            }
 
         </div>
     )
 
-}
-
-function emitMove(socket: any, move: CoordinateMove): void {
-    socket.emit("request-move", move);
 }
