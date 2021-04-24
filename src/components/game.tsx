@@ -32,7 +32,7 @@ export const Game: FC = (): ReactElement => {
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [tokenMap, setTokenMap]= useState<TokenMap>(startState(grid));
     const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
-    const [currentPlayer, setCurrentPlayer] = useState(-1);
+    const [currentPlayer, setCurrentPlayer] = useState<User | null>(null);
     const [currentRoom, setCurrentRoom] = useState("");
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
@@ -55,11 +55,9 @@ export const Game: FC = (): ReactElement => {
 
     return (
         <div>
-            {currentRoom === ""  || currentPlayer === -1 ? (<StartPanel users={users} currentPlayer={currentPlayer} setCurrentPlayer={setCurrentPlayer} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} socket={socket} />) :
-            <>
-                <div>
-                    <GameInfo room={currentRoom} turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
-                </div>
+            {currentRoom === ""  || currentPlayer === null || currentPlayer.role === -1 ? (<StartPanel users={users} currentPlayer={currentPlayer} setCurrentPlayer={setCurrentPlayer} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} socket={socket} />) :
+            <Box width={1100} mx="auto">
+                <GameInfo room={currentRoom} turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
                 <Flex width={1100} mx="auto">
                     <Box width={800} >
                         <Board 
@@ -99,7 +97,7 @@ export const Game: FC = (): ReactElement => {
                         } 
                         tokenClick={
                             (e, id) =>{
-                                if (turn % 2 === currentPlayer && tokenMap[id].player === turn % 2) {
+                                if (turn % 2 === currentPlayer.role && tokenMap[id].player === turn % 2) {
                                     setSelectedToken(id);
                                     tokenMap[id].isSelected = true;
                                 }
@@ -107,12 +105,12 @@ export const Game: FC = (): ReactElement => {
                         }/>
                     </Box>
                     <Box width={300}>
-                        <ChatBox socket={socket} room={currentRoom} username={"TODO"}  />
+                        <ChatBox socket={socket} room={currentRoom} username={currentPlayer.name}  />
                         <UserList users={users} />
                     </Box>
                 </Flex>
 
-            </>
+            </Box>
             }
 
         </div>

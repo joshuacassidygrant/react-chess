@@ -53,3 +53,9 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap,
     tokenMap = updateTokenData(tokenMap, {[token[0]]: tokenData.setCoordAndReturn({x: move.to[0], y: move.to[1], grid})});
     return tokenMap;
 }
+
+export function roleToName(roleNumber: number): string {
+    const roles: string[] = ["White", "Black", "Spectator"];
+    if (!(roleNumber in roles)) return "None";
+    return roles[roleNumber];
+}

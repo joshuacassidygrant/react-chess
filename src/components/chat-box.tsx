@@ -18,7 +18,7 @@ export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement 
         socket.on("approved-chat", function(chat: any) {
            setMessages(messages => [...messages, {message: chat.message, username: chat.username}])
         });
-    }, []);
+    }, [socket]);
 
     return (
         <Flex width={300} style={{border: "1px solid #888"}} flexDirection="column" justifyContent="space-between">
