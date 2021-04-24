@@ -1,11 +1,12 @@
 import React, {FC, ReactElement, useState, useEffect} from "react";
 import {Board} from "./board";
-import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
+import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
 import {startState} from "../game/start";
 import {updateTokenData, coordinateInList, doMove, toMove, emitMove} from "../utils/";
 import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
+import { UserList } from "./user-list";
 
 const socketEndpoint = "http://localhost:3001";
 const io = require("socket.io-client");
@@ -34,6 +35,7 @@ export const Game: FC = (): ReactElement => {
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
+    const [users, setUsers] = useState<User[]>([]);
 
     const incrementTurn = (turn: number) => {
         setTurn(turn + 1);
@@ -43,61 +45,65 @@ export const Game: FC = (): ReactElement => {
         socket.on("approved-move", function(move: CoordinateMove) {
             setTokenMap(tokenMap => doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
         });
+        socket.on("users-changed", function(users: any[]) {
+            setUsers(Object.values(users));
+        });
     }, []);
 
 
     return (
         <div>
-            {currentRoom === ""  || currentPlayer === -1 ? (<StartPanel currentPlayer={currentPlayer} setCurrentPlayer={setCurrentPlayer} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} socket={socket} />) :
+            {currentRoom === ""  || currentPlayer === -1 ? (<StartPanel users={users} currentPlayer={currentPlayer} setCurrentPlayer={setCurrentPlayer} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} socket={socket} />) :
             <>
-            <div>
-                <GameInfo turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
-            </div>
-            <div>
-            <Board 
-                tokenMap={tokenMap} gridData={grid} legalCells={legalCells}
-                mouseUp={
-                    (e) => {
-                        if(!selectedToken) return;
-                        const tokenData: TokenData = tokenMap[selectedToken];
-        
-                        if(!grid.coordinateInGridBounds(hoverCell)) {
-                            const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-                            setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
-                            // TODO: this lets us leave tokens randomly off the board...
-                        } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
-                            const originalCoord = tokenData.coord;
-                            if (!originalCoord) return;
-                            const move = toMove(turn, originalCoord, hoverCell);
-                            setTokenMap(doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces([...takenPieces, d])}));
-                            emitMove(socket, currentRoom, move);
-                        }
-                        tokenMap[selectedToken].isSelected = false;
-                        setSelectedToken("");
-                        setLegalCells([]);
+                <div>
+                    <GameInfo room={currentRoom} turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
+                </div>
+                <div>
+                <Board 
+                    tokenMap={tokenMap} gridData={grid} legalCells={legalCells}
+                    mouseUp={
+                        (e) => {
+                            if(!selectedToken) return;
+                            const tokenData: TokenData = tokenMap[selectedToken];
+            
+                            if(!grid.coordinateInGridBounds(hoverCell)) {
+                                const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+                                setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
+                                // TODO: this lets us leave tokens randomly off the board...
+                            } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
+                                const originalCoord = tokenData.coord;
+                                if (!originalCoord) return;
+                                const move = toMove(turn, originalCoord, hoverCell);
+                                setTokenMap(doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces([...takenPieces, d])}));
+                                emitMove(socket, currentRoom, move);
+                            }
+                            tokenMap[selectedToken].isSelected = false;
+                            setSelectedToken("");
+                            setLegalCells([]);
 
-                    }
-                } 
-                mouseMove={
-                    (e) => {
-                        if (!selectedToken) return;
-                        const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-                        setHoverCell(grid.getGridCoordinates(pos));
-                        const token = getOr(null, selectedToken, tokenMap);
-                        if (!token) return;
-                        token.pos = pos;
-                        setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, grid));
-                    }
-                } 
-                tokenClick={
-                    (e, id) =>{
-                        if (turn % 2 === currentPlayer && tokenMap[id].player === turn % 2) {
-                            setSelectedToken(id);
-                            tokenMap[id].isSelected = true;
                         }
-                    }
-                }/>
-            </div>
+                    } 
+                    mouseMove={
+                        (e) => {
+                            if (!selectedToken) return;
+                            const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+                            setHoverCell(grid.getGridCoordinates(pos));
+                            const token = getOr(null, selectedToken, tokenMap);
+                            if (!token) return;
+                            token.pos = pos;
+                            setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, grid));
+                        }
+                    } 
+                    tokenClick={
+                        (e, id) =>{
+                            if (turn % 2 === currentPlayer && tokenMap[id].player === turn % 2) {
+                                setSelectedToken(id);
+                                tokenMap[id].isSelected = true;
+                            }
+                        }
+                    }/>
+                </div>
+                <UserList users={users} />
             </>
             }
 
