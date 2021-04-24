@@ -8,7 +8,6 @@ type GameInfoProps = {
 }
 
 export const GameInfo: FC<GameInfoProps> = ({turn, captured}): ReactElement => {
-    console.log(captured);
     return (
         <div style={{margin: "24px 0"}}>
             <div>
