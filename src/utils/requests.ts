@@ -11,3 +11,7 @@ export function joinRoom(socket: any, req: any): void {
 export function chooseRole(socket: any, room:string, role:number): void {
     socket.emit("request-role", {role, room});
 }
+
+export function sendChat(socket: any, room: string, username: string, message: string): void {
+    socket.emit("request-chat", {room, username, message});
+}

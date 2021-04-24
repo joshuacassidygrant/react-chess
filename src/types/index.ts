@@ -5,3 +5,4 @@ export * from "./gridData";
 export * from "./player";
 export * from "./requests";
 export * from "./user";
+export * from "./chat";

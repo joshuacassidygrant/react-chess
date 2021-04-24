@@ -7,6 +7,8 @@ import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
+import { ChatBox } from "./chat-box";
+import { Box, Flex } from "rebass";
 
 const socketEndpoint = "http://localhost:3001";
 const io = require("socket.io-client");
@@ -58,52 +60,58 @@ export const Game: FC = (): ReactElement => {
                 <div>
                     <GameInfo room={currentRoom} turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
                 </div>
-                <div>
-                <Board 
-                    tokenMap={tokenMap} gridData={grid} legalCells={legalCells}
-                    mouseUp={
-                        (e) => {
-                            if(!selectedToken) return;
-                            const tokenData: TokenData = tokenMap[selectedToken];
-            
-                            if(!grid.coordinateInGridBounds(hoverCell)) {
-                                const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-                                setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
-                                // TODO: this lets us leave tokens randomly off the board...
-                            } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
-                                const originalCoord = tokenData.coord;
-                                if (!originalCoord) return;
-                                const move = toMove(turn, originalCoord, hoverCell);
-                                setTokenMap(doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces([...takenPieces, d])}));
-                                emitMove(socket, currentRoom, move);
-                            }
-                            tokenMap[selectedToken].isSelected = false;
-                            setSelectedToken("");
-                            setLegalCells([]);
+                <Flex width={1100} mx="auto">
+                    <Box width={800} >
+                        <Board 
+                        tokenMap={tokenMap} gridData={grid} legalCells={legalCells}
+                        mouseUp={
+                            (e) => {
+                                if(!selectedToken) return;
+                                const tokenData: TokenData = tokenMap[selectedToken];
+                
+                                if(!grid.coordinateInGridBounds(hoverCell)) {
+                                    const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+                                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
+                                    // TODO: this lets us leave tokens randomly off the board...
+                                } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
+                                    const originalCoord = tokenData.coord;
+                                    if (!originalCoord) return;
+                                    const move = toMove(turn, originalCoord, hoverCell);
+                                    setTokenMap(doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces([...takenPieces, d])}));
+                                    emitMove(socket, currentRoom, move);
+                                }
+                                tokenMap[selectedToken].isSelected = false;
+                                setSelectedToken("");
+                                setLegalCells([]);
 
-                        }
-                    } 
-                    mouseMove={
-                        (e) => {
-                            if (!selectedToken) return;
-                            const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-                            setHoverCell(grid.getGridCoordinates(pos));
-                            const token = getOr(null, selectedToken, tokenMap);
-                            if (!token) return;
-                            token.pos = pos;
-                            setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, grid));
-                        }
-                    } 
-                    tokenClick={
-                        (e, id) =>{
-                            if (turn % 2 === currentPlayer && tokenMap[id].player === turn % 2) {
-                                setSelectedToken(id);
-                                tokenMap[id].isSelected = true;
                             }
-                        }
-                    }/>
-                </div>
-                <UserList users={users} />
+                        } 
+                        mouseMove={
+                            (e) => {
+                                if (!selectedToken) return;
+                                const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+                                setHoverCell(grid.getGridCoordinates(pos));
+                                const token = getOr(null, selectedToken, tokenMap);
+                                if (!token) return;
+                                token.pos = pos;
+                                setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, grid));
+                            }
+                        } 
+                        tokenClick={
+                            (e, id) =>{
+                                if (turn % 2 === currentPlayer && tokenMap[id].player === turn % 2) {
+                                    setSelectedToken(id);
+                                    tokenMap[id].isSelected = true;
+                                }
+                            }
+                        }/>
+                    </Box>
+                    <Box width={300}>
+                        <ChatBox socket={socket} room={currentRoom} username={"TODO"}  />
+                        <UserList users={users} />
+                    </Box>
+                </Flex>
+
             </>
             }
 
