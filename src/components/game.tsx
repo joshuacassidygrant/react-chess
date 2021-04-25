@@ -39,13 +39,10 @@ export const Game: FC = (): ReactElement => {
     });
     const [users, setUsers] = useState<User[]>([]);
 
-    const incrementTurn = (turn: number) => {
-        setTurn(turn + 1);
-    }
-
     useEffect(() => {
         socket.on("approved-move", function(move: CoordinateMove) {
-            setTokenMap(tokenMap => doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
+            setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
+            setTurn(turn => move.turn + 1)
         });
         socket.on("users-changed", function(users: any[]) {
             setUsers(Object.values(users));
@@ -75,7 +72,8 @@ export const Game: FC = (): ReactElement => {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
                                     const move = toMove(turn, originalCoord, hoverCell);
-                                    setTokenMap(doMove(move, grid, tokenMap, incrementTurn, (d) => {setTakenPieces([...takenPieces, d])}));
+                                    setTokenMap(doMove(move, grid, tokenMap, (d) => {setTakenPieces([...takenPieces, d])}));
+                                    setTurn(turn => move.turn + 1)
                                     emitMove(socket, currentRoom, move);
                                 }
                                 tokenMap[selectedToken].isSelected = false;
