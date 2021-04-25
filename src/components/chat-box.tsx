@@ -11,11 +11,26 @@ type ChatProps = {
 }
 
 const StyledChatBox = styled(Box)`
-    padding: 20px;
-    overflow-y: scroll;
-    p {
-        text-align: left;
-    }
+    position: relative;
+    overflow: hidden;
+    .message-scroll {
+        padding: 20px;
+        overflow-y: scroll;
+        height: 100%;
+        max-height: 100%;
+        p {
+            text-align: left;
+        }
+    }  
+`;
+
+const StyledChatInput = styled(Flex)`
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    width: calc(100% - 30px);
+    height: 30px;
 `;
 
 export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement => {
@@ -32,22 +47,27 @@ export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement 
     return (
         <Flex width={300} style={{border: "1px solid #888"}} flexDirection="column" justifyContent="space-between">
             <StyledChatBox height="400px">
-                {
-                    messages.map((m, i) => (
-                        <p key={i}><b>{m.username}: </b>{m.message}</p>
-                    ))
-                }
+                <Box className="message-scroll">
+                    {
+                        messages.map((m, i) => (
+                            <p key={i}><b>{m.username}: </b>{m.message}</p>
+                        ))
+                    }
+                </Box>
+
+                <StyledChatInput>
+                    <form style={{width: "100%"}} onSubmit={(e) =>{ e.preventDefault(); return false;}}>
+                        <input style={{boxSizing:"border-box", height:"30px", padding: "10px", width: "2fr"}} value={currentInput} onChange={(e) => setCurrentInput(e.target.value)}/>
+                        <input type="submit" style={{  height:"30px", width: "70px"}} onClick={(e) => {
+                            if (currentInput === "") return;
+                            sendChat(socket, room, username, currentInput);
+                            setCurrentInput("");
+                        }}/>
+                    </form>
+                </StyledChatInput>
             </StyledChatBox>
-            <Flex width="100%">
-                <input style={{width: "300px"}} value={currentInput} onChange={(e) => setCurrentInput(e.target.value)}/>
-                <button  style={{width: "100px"}} onClick={(e) => {
-                    if (currentInput === "") return;
-                    sendChat(socket, room, username, currentInput);
-                    setCurrentInput("");
-                    
-                }}>Submit</button>
-            </Flex>
+
         </Flex>
-        
+
     )
 }

@@ -47,6 +47,12 @@ export const Game: FC = (): ReactElement => {
         socket.on("users-changed", function(users: any[]) {
             setUsers(Object.values(users));
         });
+
+        return () => {
+            // clean up goes here
+            socket.emit("leave-room", currentRoom);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -105,6 +111,10 @@ export const Game: FC = (): ReactElement => {
                     <Box width={300}>
                         <ChatBox socket={socket} room={currentRoom} username={currentPlayer.name}  />
                         <UserList users={users} />
+                        <button onClick={() => {
+                            socket.emit("leave-room", currentRoom);
+                            setCurrentRoom("");
+                        }}>Leave Room</button>
                     </Box>
                 </Flex>
 
