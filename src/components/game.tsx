@@ -2,7 +2,7 @@ import React, {FC, ReactElement, useState, useEffect} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
 import {startState} from "../game/start";
-import {updateTokenData, coordinateInList, doMove, toMove, emitMove} from "../utils/";
+import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint} from "../utils/";
 import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
@@ -10,7 +10,6 @@ import { UserList } from "./user-list";
 import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
 
-const socketEndpoint = "http://localhost:3001";
 const io = require("socket.io-client");
 
 // GAME CONSTANTS

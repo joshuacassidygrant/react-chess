@@ -1,7 +1,7 @@
-import React, {FC, ReactElement, useState} from "react";
+import React, {FC, ReactElement, useEffect, useState} from "react";
 import {Flex, Box} from "rebass";
 import { User } from "../types";
-import { chooseRole, joinRoom } from "../utils";
+import { chooseRole, joinRoom, requestRandomString } from "../utils";
 
 export type StartPanelProps = {
     socket: any,
@@ -17,6 +17,16 @@ export const StartPanel: FC<StartPanelProps> = ({socket, currentRoom, setCurrent
     const [currentRoomInput, setCurrentRoomInput] = useState(currentRoom);
     const [currentNameInput, setCurrentNameInput] = useState("");
 
+    useEffect(() => {
+        if (currentRoomInput === "") {
+            requestRandomString(3, (txt)=>{setCurrentRoomInput(txt)});
+        }
+
+        if (currentNameInput === "") {
+            requestRandomString(2, (txt)=>{setCurrentNameInput(txt)});
+        }
+    }, [])
+
     return (
         <Flex p={2} width={600} mx="auto" my={50} bg="#499">
             {
@@ -25,12 +35,14 @@ export const StartPanel: FC<StartPanelProps> = ({socket, currentRoom, setCurrent
                <h2>Join a Room</h2>
                <Flex justifyContent="space-between">
                    <Box>
-                     <label>Room:</label>
+                     <Box><label>Room:</label></Box>
                      <input  value={currentRoomInput} onChange={(e) => setCurrentRoomInput(e.target.value)}/>
+                     <button onClick={() => {requestRandomString(3, (txt)=>{setCurrentRoomInput(txt)})}}>RND</button>
                    </Box>
                    <Box>
-                    <label>Nickname:</label>
+                    <Box><label>Nickname:</label></Box>
                     <input  value={currentNameInput} onChange={(e) => setCurrentNameInput(e.target.value)}/>
+                    <button onClick={() => {requestRandomString(2, (txt)=>{setCurrentNameInput(txt)})}}>RND</button>
                    </Box>
                </Flex>
 
@@ -39,7 +51,6 @@ export const StartPanel: FC<StartPanelProps> = ({socket, currentRoom, setCurrent
                     setCurrentRoom(currentRoomInput);
                     setCurrentPlayer({name: currentNameInput, socket: socket.id , role: -1});
                 }}>Join Room</button> 
-                <button onClick={() => {setCurrentRoomInput(btoa((Math.random()) + "").substr(5, 12))}}>Generate Room Code</button>
             </Box>
             ) : (
             <Box>
