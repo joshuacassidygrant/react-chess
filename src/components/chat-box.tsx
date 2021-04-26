@@ -3,6 +3,7 @@ import {Flex, Box} from "rebass";
 import styled from "styled-components";
 import {Chat} from "../types";
 import { sendChat } from "../utils";
+import { TextInput } from "./text-input";
 
 type ChatProps = {
     socket: any
@@ -57,7 +58,7 @@ export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement 
 
                 <StyledChatInput>
                     <form style={{width: "100%"}} onSubmit={(e) =>{ e.preventDefault(); return false;}}>
-                        <input style={{boxSizing:"border-box", height:"30px", padding: "10px", width: "2fr"}} value={currentInput} onChange={(e) => setCurrentInput(e.target.value)}/>
+                        <TextInput style={{width: "2fr"}} value={currentInput} onChange={(e) => setCurrentInput(e.target.value)}/>
                         <input type="submit" style={{  height:"30px", width: "70px"}} onClick={(e) => {
                             if (currentInput === "") return;
                             sendChat(socket, room, username, currentInput);

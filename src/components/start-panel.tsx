@@ -2,6 +2,8 @@ import React, {FC, ReactElement, useEffect, useState} from "react";
 import {Flex, Box} from "rebass";
 import { User } from "../types";
 import { chooseRole, joinRoom, requestRandomString } from "../utils";
+import { RandomButton } from "./random-button";
+import { TextInput } from "./text-input";
 
 export type StartPanelProps = {
     socket: any,
@@ -33,16 +35,20 @@ export const StartPanel: FC<StartPanelProps> = ({socket, currentRoom, setCurrent
                 currentRoom === "" ?
            (<Box width="100%">
                <h2>Join a Room</h2>
-               <Flex justifyContent="space-between">
-                   <Box>
-                     <Box><label>Room:</label></Box>
-                     <input  value={currentRoomInput} onChange={(e) => setCurrentRoomInput(e.target.value)}/>
-                     <button onClick={() => {requestRandomString(3, (txt)=>{setCurrentRoomInput(txt)})}}>RND</button>
+               <Flex justifyContent="space-between" mb={10}>
+                   <Box width="45%">
+                     <Box textAlign="left"><label>Room:</label></Box>
+                     <Flex alignItems="center">
+                        <TextInput style={{width: "100%"}} value={currentRoomInput} onChange={(e) => setCurrentRoomInput(e.target.value)}/>
+                        <RandomButton click={() => {requestRandomString(3, (txt)=>{setCurrentRoomInput(txt)})}}/>
+                     </Flex>
                    </Box>
-                   <Box>
-                    <Box><label>Nickname:</label></Box>
-                    <input  value={currentNameInput} onChange={(e) => setCurrentNameInput(e.target.value)}/>
-                    <button onClick={() => {requestRandomString(2, (txt)=>{setCurrentNameInput(txt)})}}>RND</button>
+                   <Box width="45%">
+                    <Box textAlign="left"><label>Nickname:</label></Box>
+                    <Flex alignItems="center">
+                        <TextInput style={{width: "100%"}} value={currentNameInput} onChange={(e) => setCurrentNameInput(e.target.value)}/>
+                        <RandomButton click={() => {requestRandomString(2, (txt)=>{setCurrentNameInput(txt)})}}/>
+                    </Flex>
                    </Box>
                </Flex>
 
