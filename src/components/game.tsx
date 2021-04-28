@@ -2,7 +2,7 @@ import React, {FC, ReactElement, useState, useEffect} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
 import {startState} from "../game/start";
-import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint} from "../utils/";
+import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint, filterIllegalMoves} from "../utils/";
 import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
@@ -95,14 +95,15 @@ export const Game: FC = (): ReactElement => {
                                 const token = getOr(null, selectedToken, tokenMap);
                                 if (!token) return;
                                 token.pos = pos;
-                                setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, grid));
                             }
                         } 
                         tokenClick={
                             (e, id) =>{
                                 if (turn % 2 === currentPlayer.role && tokenMap[id].player === turn % 2) {
                                     setSelectedToken(id);
-                                    tokenMap[id].isSelected = true;
+                                    const token = tokenMap[id];
+                                    token.isSelected = true;
+                                    setLegalCells(filterIllegalMoves(tokenMap, id, token, token.piece.getLegalMoves(id, tokenMap, grid)));
                                 }
                             }
                         }/>

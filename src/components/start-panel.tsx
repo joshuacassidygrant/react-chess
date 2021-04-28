@@ -27,6 +27,7 @@ export const StartPanel: FC<StartPanelProps> = ({socket, currentRoom, setCurrent
         if (currentNameInput === "") {
             requestRandomString(2, (txt)=>{setCurrentNameInput(txt)});
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (

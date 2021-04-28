@@ -43,6 +43,8 @@ export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement 
         socket.on("approved-chat", function(chat: any) {
            setMessages(messages => [...messages, {message: chat.message, username: chat.username}])
         });
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
