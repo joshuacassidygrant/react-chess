@@ -1,4 +1,5 @@
 import {TokenData, TokenMap, Coordinate, CoordinateMove, GridData} from "../types";
+import { GameState } from "../types/gameState";
 import {emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, removeTokenData, updateTokenData, coordinateInList} from "./index";
 
 export function getOpponent(player: number) {
@@ -82,4 +83,13 @@ export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenDat
     // remove any move that  would put self in check
     return coords.filter(c => !checkedColors(updateTokenData({...tokenMap}, {[tokenId]: testToken.setCoordAndReturn(c)})).includes(tokenData.player));
 
+}
+
+export function checkGameState(state: GameState, tokenMap: TokenMap): GameState {
+    if (state === GameState.NOT_STARTED) return GameState.PLAYING;
+    // TODO checkmate, stalemate
+
+
+    return GameState.PLAYING;
+    // TODO
 }

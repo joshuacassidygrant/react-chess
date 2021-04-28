@@ -2,13 +2,14 @@ import React, {FC, ReactElement, useState, useEffect} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
 import {startState} from "../game/start";
-import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint, filterIllegalMoves} from "../utils/";
+import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
 import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
 import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
+import { GameState } from "../types/gameState";
 
 const io = require("socket.io-client");
 
@@ -33,6 +34,7 @@ export const Game: FC = (): ReactElement => {
     const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
     const [currentPlayer, setCurrentPlayer] = useState<User | null>(null);
     const [currentRoom, setCurrentRoom] = useState("");
+    const [currentGameState, setCurrentGameState] = useState<GameState>(GameState.NOT_STARTED);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
@@ -42,6 +44,7 @@ export const Game: FC = (): ReactElement => {
         socket.on("approved-move", function(move: CoordinateMove) {
             setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
             setTurn(turn => move.turn + 1)
+            const state = checkGameState(currentGameState, tokenMap);
         });
         socket.on("users-changed", function(users: any[]) {
             setUsers(Object.values(users));
@@ -80,10 +83,12 @@ export const Game: FC = (): ReactElement => {
                                     setTokenMap(doMove(move, grid, tokenMap, (d) => {setTakenPieces([...takenPieces, d])}));
                                     setTurn(turn => move.turn + 1)
                                     emitMove(socket, currentRoom, move);
+                                    const state = checkGameState(currentGameState, tokenMap);
                                 }
                                 tokenMap[selectedToken].isSelected = false;
                                 setSelectedToken("");
                                 setLegalCells([]);
+
 
                             }
                         } 
