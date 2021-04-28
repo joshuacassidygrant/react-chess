@@ -18,8 +18,8 @@ export function startState(grid: GridData): TokenMap {
         wn2: new TokenData(Knight, 0,  {x:6, y:7, grid }),
         wr1: new TokenData(Rook, 0,  {x:0, y:7, grid }),
         wr2: new TokenData(Rook, 0,  {x:7, y:7, grid }),
-        wq1: new TokenData(Queen, 0,  {x:4, y:7, grid }),
-        wk1: new TokenData(King, 0,  {x:3, y:7, grid }),
+        wq1: new TokenData(Queen, 0,  {x:3, y:7, grid }),
+        wk1: new TokenData(King, 0,  {x:4, y:7, grid }),
         bp0: new TokenData(Pawn, 1,  {x:0, y:1, grid }),
         bp1: new TokenData(Pawn, 1,  {x:1, y:1, grid }),
         bp2: new TokenData(Pawn, 1,  {x:2, y:1, grid }),
@@ -34,8 +34,8 @@ export function startState(grid: GridData): TokenMap {
         bn2: new TokenData(Knight, 1,  {x:6, y:0, grid }),
         br1: new TokenData(Rook, 1,  {x:0, y:0, grid }),
         br2: new TokenData(Rook, 1,  {x:7, y:0, grid }),
-        bq1: new TokenData(Queen, 1,  {x:4, y:0, grid }),
-        bk1: new TokenData(King, 1,  {x:3, y:0, grid})
+        bq1: new TokenData(Queen, 1,  {x:3, y:0, grid }),
+        bk1: new TokenData(King, 1,  {x:4, y:0, grid})
         }
     }
 

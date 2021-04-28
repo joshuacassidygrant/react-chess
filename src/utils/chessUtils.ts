@@ -87,7 +87,30 @@ export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenDat
 
 export function checkGameState(state: GameState, tokenMap: TokenMap): GameState {
     if (state === GameState.NOT_STARTED) return GameState.PLAYING;
-    // TODO checkmate, stalemate
+    const blackKingCoord = tokenMap.bk1.coord;
+
+    if (!blackKingCoord) {
+        console.log("Missing king.");
+        return GameState.ERROR;
+    }
+
+    const grid = blackKingCoord.grid;
+    if (checkedColors(tokenMap).includes(0)) {
+        // White is checked; check for checkmate
+        Object.entries(tokenMap)
+            .filter(e => e[1].player === 0)
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)
+        return GameState.BLACK_WINS;
+    } 
+    
+    if (checkedColors(tokenMap).includes(1)) {
+        // Black is checked; check for checkmate
+        Object.entries(tokenMap)
+            .filter(e => e[1].player === 1)
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)
+        return GameState.WHITE_WINS;
+    }
+    // TODO stalemate
 
 
     return GameState.PLAYING;

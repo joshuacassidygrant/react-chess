@@ -44,7 +44,6 @@ export const Game: FC = (): ReactElement => {
         socket.on("approved-move", function(move: CoordinateMove) {
             setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
             setTurn(turn => move.turn + 1)
-            const state = checkGameState(currentGameState, tokenMap);
         });
         socket.on("users-changed", function(users: any[]) {
             setUsers(Object.values(users));
@@ -57,6 +56,13 @@ export const Game: FC = (): ReactElement => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        setCurrentGameState(checkGameState(currentGameState, tokenMap));
+    }, [tokenMap])
+
+    useEffect(() => {
+        console.log(currentGameState);
+    }, [currentGameState])
 
     return (
         <div>
@@ -80,10 +86,11 @@ export const Game: FC = (): ReactElement => {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
                                     const move = toMove(turn, originalCoord, hoverCell);
-                                    setTokenMap(doMove(move, grid, tokenMap, (d) => {setTakenPieces([...takenPieces, d])}));
+                                    const newMap = doMove(move, grid, tokenMap, (d) => {setTakenPieces([...takenPieces, d])});
+                                    setTokenMap(newMap);
                                     setTurn(turn => move.turn + 1)
                                     emitMove(socket, currentRoom, move);
-                                    const state = checkGameState(currentGameState, tokenMap);
+
                                 }
                                 tokenMap[selectedToken].isSelected = false;
                                 setSelectedToken("");
