@@ -1,5 +1,5 @@
 import {TokenData, TokenMap, Coordinate, CoordinateMove, GridData} from "../types";
-import {emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, removeTokenData, updateTokenData} from "./index";
+import {emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, removeTokenData, updateTokenData, coordinateInList} from "./index";
 
 export function getOpponent(player: number) {
     return player ? 0 : 1;
@@ -50,6 +50,7 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap,
         addTakenPiece(captureToken[1]);
     }
     tokenMap = updateTokenData(tokenMap, {[token[0]]: tokenData.setCoordAndReturn({x: move.to[0], y: move.to[1], grid})});
+
     return tokenMap;
 }
 
@@ -57,4 +58,21 @@ export function roleToName(roleNumber: number): string {
     const roles: string[] = ["White", "Black", "Spectator"];
     if (!(roleNumber in roles)) return "None";
     return roles[roleNumber];
+}
+
+export function checkedColors(tokenMap: TokenMap): number[] {
+    const blackKingCoord = tokenMap.bk1.coord;
+    const whiteKingCoord = tokenMap.wk1.coord;
+
+    if (!blackKingCoord || !whiteKingCoord) {
+        console.log("Missing king.");
+        return [];
+    }
+
+    const grid = blackKingCoord.grid;
+
+    return [
+        ...Object.entries(tokenMap).some(e => e[1].player === 1 && coordinateInList(whiteKingCoord, e[1].piece.getLegalMoves(e[0], tokenMap, grid))) ? [0] : [],
+        ...Object.entries(tokenMap).some(e => e[1].player === 0 && coordinateInList(blackKingCoord, e[1].piece.getLegalMoves(e[0], tokenMap, grid))) ? [1] : [],
+    ];
 }
