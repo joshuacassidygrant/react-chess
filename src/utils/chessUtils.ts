@@ -79,8 +79,13 @@ export function checkedColors(tokenMap: TokenMap): number[] {
 }
 
 export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenData: TokenData, coords: Coordinate[]): Coordinate[] {
-    const testToken = new TokenData(tokenData.piece, tokenData.player, tokenData.coord);
+    // remove any move that would put token off board
+    if (tokenData.coord) {
+        const grid = tokenData.coord.grid;
+        coords = coords.filter(c => grid.coordinateInGridBounds(c));
+    }
     // remove any move that  would put self in check
+    const testToken = new TokenData(tokenData.piece, tokenData.player, tokenData.coord);
     return coords.filter(c => !checkedColors(updateTokenData({...tokenMap}, {[tokenId]: testToken.setCoordAndReturn(c)})).includes(tokenData.player));
 
 }
@@ -97,18 +102,21 @@ export function checkGameState(state: GameState, tokenMap: TokenMap): GameState 
     const grid = blackKingCoord.grid;
     if (checkedColors(tokenMap).includes(0)) {
         // White is checked; check for checkmate
-        Object.entries(tokenMap)
+        if (Object.entries(tokenMap)
             .filter(e => e[1].player === 0)
-            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)
-        return GameState.BLACK_WINS;
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)) {
+                return GameState.BLACK_WINS;
+            }
     } 
     
     if (checkedColors(tokenMap).includes(1)) {
         // Black is checked; check for checkmate
-        Object.entries(tokenMap)
+        if (Object.entries(tokenMap)
             .filter(e => e[1].player === 1)
-            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)
-        return GameState.WHITE_WINS;
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)) {
+                return GameState.WHITE_WINS;
+            }
+
     }
     // TODO stalemate
 
