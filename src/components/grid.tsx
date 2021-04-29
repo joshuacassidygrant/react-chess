@@ -23,7 +23,7 @@ export const Grid: FC<GridProps> = React.memo(({gridData, legalCells, children})
         for (let x : number = 0; x < gridData.xWidthCells; x++) {
             const row = []
             for (let y: number = 0; y < gridData.yHeightCells; y++) {
-                row.push({x, y, color: (x + y) % 2 === 0 ? "#966633" : "#D6B693"} as CellProps);
+                row.push({x, y, color: (x + y) % 2 === 0 ? "#D6B693" : "#966633"} as CellProps);
             }
             map[x] = row;
         }

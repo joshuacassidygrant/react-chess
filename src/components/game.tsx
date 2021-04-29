@@ -2,13 +2,14 @@ import React, {FC, ReactElement, useState, useEffect} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
 import {startState} from "../game/start";
-import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint} from "../utils/";
+import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
 import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
 import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
+import { GameState } from "../types/gameState";
 
 const io = require("socket.io-client");
 
@@ -33,6 +34,7 @@ export const Game: FC = (): ReactElement => {
     const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
     const [currentPlayer, setCurrentPlayer] = useState<User | null>(null);
     const [currentRoom, setCurrentRoom] = useState("");
+    const [currentGameState, setCurrentGameState] = useState<GameState>(GameState.NOT_STARTED);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
@@ -43,8 +45,16 @@ export const Game: FC = (): ReactElement => {
             setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
             setTurn(turn => move.turn + 1)
         });
+        
         socket.on("users-changed", function(users: any[]) {
             setUsers(Object.values(users));
+        });
+
+        socket.on("restart-game", function() {
+            setTokenMap(startState(grid));
+            setTakenPieces([]);
+            setTurn(0);
+            setCurrentGameState(GameState.NOT_STARTED);
         });
 
         return () => {
@@ -54,12 +64,15 @@ export const Game: FC = (): ReactElement => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        setCurrentGameState(checkGameState(currentGameState, tokenMap));
+    }, [tokenMap])
 
     return (
         <div>
             {currentRoom === ""  || currentPlayer === null || currentPlayer.role === -1 ? (<StartPanel users={users} currentPlayer={currentPlayer} setCurrentPlayer={setCurrentPlayer} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} socket={socket} />) :
             <Box width={1100} mx="auto">
-                <GameInfo room={currentRoom} turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
+                <GameInfo currentState={currentGameState}  turn={turn} captured={takenPieces} currentPlayer={currentPlayer} requestRestart={() =>socket.emit("request-restart", currentRoom)}/>
                 <Flex width={1100} mx="auto">
                     <Box width={800} >
                         <Board 
@@ -77,13 +90,16 @@ export const Game: FC = (): ReactElement => {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
                                     const move = toMove(turn, originalCoord, hoverCell);
-                                    setTokenMap(doMove(move, grid, tokenMap, (d) => {setTakenPieces([...takenPieces, d])}));
+                                    const newMap = doMove(move, grid, tokenMap, (d) => {setTakenPieces([...takenPieces, d])});
+                                    setTokenMap(newMap);
                                     setTurn(turn => move.turn + 1)
                                     emitMove(socket, currentRoom, move);
+
                                 }
                                 tokenMap[selectedToken].isSelected = false;
                                 setSelectedToken("");
                                 setLegalCells([]);
+
 
                             }
                         } 
@@ -95,19 +111,21 @@ export const Game: FC = (): ReactElement => {
                                 const token = getOr(null, selectedToken, tokenMap);
                                 if (!token) return;
                                 token.pos = pos;
-                                setLegalCells(token.piece.getLegalMoves(selectedToken, tokenMap, grid));
                             }
                         } 
                         tokenClick={
                             (e, id) =>{
                                 if (turn % 2 === currentPlayer.role && tokenMap[id].player === turn % 2) {
                                     setSelectedToken(id);
-                                    tokenMap[id].isSelected = true;
+                                    const token = tokenMap[id];
+                                    token.isSelected = true;
+                                    setLegalCells(filterIllegalMoves(tokenMap, id, token, token.piece.getLegalMoves(id, tokenMap, grid)));
                                 }
                             }
                         }/>
                     </Box>
                     <Box width={300}>
+                        <h3>Room: {currentRoom}</h3>
                         <ChatBox socket={socket} room={currentRoom} username={currentPlayer.name}  />
                         <UserList users={users} />
                         <button onClick={() => {

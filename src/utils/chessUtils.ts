@@ -1,5 +1,6 @@
 import {TokenData, TokenMap, Coordinate, CoordinateMove, GridData} from "../types";
-import {emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, removeTokenData, updateTokenData} from "./index";
+import { GameState } from "../types/gameState";
+import {emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, removeTokenData, updateTokenData, coordinateInList} from "./index";
 
 export function getOpponent(player: number) {
     return player ? 0 : 1;
@@ -50,6 +51,7 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap,
         addTakenPiece(captureToken[1]);
     }
     tokenMap = updateTokenData(tokenMap, {[token[0]]: tokenData.setCoordAndReturn({x: move.to[0], y: move.to[1], grid})});
+
     return tokenMap;
 }
 
@@ -57,4 +59,68 @@ export function roleToName(roleNumber: number): string {
     const roles: string[] = ["White", "Black", "Spectator"];
     if (!(roleNumber in roles)) return "None";
     return roles[roleNumber];
+}
+
+export function checkedColors(tokenMap: TokenMap): number[] {
+    const blackKingCoord = tokenMap.bk1.coord;
+    const whiteKingCoord = tokenMap.wk1.coord;
+
+    if (!blackKingCoord || !whiteKingCoord) {
+        console.log("Missing king.");
+        return [];
+    }
+
+    const grid = blackKingCoord.grid;
+
+    return [
+        ...Object.entries(tokenMap).some(e => e[1].player === 1 && coordinateInList(whiteKingCoord, e[1].piece.getLegalMoves(e[0], tokenMap, grid))) ? [0] : [],
+        ...Object.entries(tokenMap).some(e => e[1].player === 0 && coordinateInList(blackKingCoord, e[1].piece.getLegalMoves(e[0], tokenMap, grid))) ? [1] : [],
+    ];
+}
+
+export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenData: TokenData, coords: Coordinate[]): Coordinate[] {
+    // remove any move that would put token off board
+    if (tokenData.coord) {
+        const grid = tokenData.coord.grid;
+        coords = coords.filter(c => grid.coordinateInGridBounds(c));
+    }
+    // remove any move that  would put self in check
+    const testToken = new TokenData(tokenData.piece, tokenData.player, tokenData.coord);
+    return coords.filter(c => !checkedColors(updateTokenData({...tokenMap}, {[tokenId]: testToken.setCoordAndReturn(c)})).includes(tokenData.player));
+
+}
+
+export function checkGameState(state: GameState, tokenMap: TokenMap): GameState {
+    if (state === GameState.NOT_STARTED) return GameState.PLAYING;
+    const blackKingCoord = tokenMap.bk1.coord;
+
+    if (!blackKingCoord) {
+        console.log("Missing king.");
+        return GameState.ERROR;
+    }
+
+    const grid = blackKingCoord.grid;
+    if (checkedColors(tokenMap).includes(0)) {
+        // White is checked; check for checkmate
+        if (Object.entries(tokenMap)
+            .filter(e => e[1].player === 0)
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)) {
+                return GameState.BLACK_WINS;
+            }
+    } 
+    
+    if (checkedColors(tokenMap).includes(1)) {
+        // Black is checked; check for checkmate
+        if (Object.entries(tokenMap)
+            .filter(e => e[1].player === 1)
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)) {
+                return GameState.WHITE_WINS;
+            }
+
+    }
+    // TODO stalemate
+
+
+    return GameState.PLAYING;
+    // TODO
 }
