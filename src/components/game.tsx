@@ -45,8 +45,16 @@ export const Game: FC = (): ReactElement => {
             setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
             setTurn(turn => move.turn + 1)
         });
+        
         socket.on("users-changed", function(users: any[]) {
             setUsers(Object.values(users));
+        });
+
+        socket.on("restart-game", function() {
+            setTokenMap(startState(grid));
+            setTakenPieces([]);
+            setTurn(0);
+            setCurrentGameState(GameState.NOT_STARTED);
         });
 
         return () => {
@@ -60,15 +68,11 @@ export const Game: FC = (): ReactElement => {
         setCurrentGameState(checkGameState(currentGameState, tokenMap));
     }, [tokenMap])
 
-    useEffect(() => {
-        console.log(currentGameState);
-    }, [currentGameState])
-
     return (
         <div>
             {currentRoom === ""  || currentPlayer === null || currentPlayer.role === -1 ? (<StartPanel users={users} currentPlayer={currentPlayer} setCurrentPlayer={setCurrentPlayer} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} socket={socket} />) :
             <Box width={1100} mx="auto">
-                <GameInfo room={currentRoom} turn={turn} captured={takenPieces} currentPlayer={currentPlayer}/>
+                <GameInfo currentState={currentGameState}  turn={turn} captured={takenPieces} currentPlayer={currentPlayer} requestRestart={() =>socket.emit("request-restart", currentRoom)}/>
                 <Flex width={1100} mx="auto">
                     <Box width={800} >
                         <Board 
@@ -121,6 +125,7 @@ export const Game: FC = (): ReactElement => {
                         }/>
                     </Box>
                     <Box width={300}>
+                        <h3>Room: {currentRoom}</h3>
                         <ChatBox socket={socket} room={currentRoom} username={currentPlayer.name}  />
                         <UserList users={users} />
                         <button onClick={() => {
