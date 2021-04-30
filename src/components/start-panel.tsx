@@ -20,15 +20,51 @@ export const StartPanel: FC<StartPanelProps> = ({socket, currentRoom, setCurrent
     const [currentNameInput, setCurrentNameInput] = useState("");
 
     useEffect(() => {
-        if (currentRoomInput === "") {
+        const params = new URLSearchParams(window.location.search);
+        const room = params.get("room");
+        if (room) {
+            setCurrentRoomInput(room);
+            params.delete("room");
+        } else if (currentRoomInput === "") {
             requestRandomString(3, (txt)=>{setCurrentRoomInput(txt)});
         }
 
-        if (currentNameInput === "") {
+        const name = params.get("name");
+        if (name) {
+            setCurrentNameInput(name);
+            params.delete("name");
+        } else if (currentNameInput === "") {
             requestRandomString(2, (txt)=>{setCurrentNameInput(txt)});
+        }
+
+        if (name && room) {
+            joinRoom(socket, {room, name});
+            setCurrentRoom(room);
+            setCurrentPlayer({name, socket: socket.id , role: -1});
+
+            const url = new URL(window.location.href);
+            url.searchParams.delete("room");
+            url.searchParams.delete("name");
+            window.history.replaceState(null, "Chess", url.toString())
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+    
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const roleString = params.get("role");
+        if (roleString && currentPlayer) {
+            const role = parseInt(roleString);
+            if ([0, 1, 2].includes(role) && users.length > 0 && (role === 2 || users.filter(el => el.role === role).length === 0)) {
+                chooseRole(socket, currentRoom, role);
+                setCurrentPlayer({name: currentPlayer.name, socket: socket.id , role});
+
+                const url = new URL(window.location.href);
+                url.searchParams.delete("role");
+                window.history.replaceState(null, "Chess", url.toString())
+            }
+        }
+    }, [users, currentPlayer])
 
     return (
         <Flex p={2} width={600} mx="auto" my={50} bg="#499">
