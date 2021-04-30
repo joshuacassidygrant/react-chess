@@ -3,7 +3,6 @@ import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
 import {startState} from "../game/start";
 import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
-import {getOr} from "lodash/fp";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -108,7 +107,7 @@ export const Game: FC = (): ReactElement => {
                                 if (!selectedToken) return;
                                 const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
                                 setHoverCell(grid.getGridCoordinates(pos));
-                                const token = getOr(null, selectedToken, tokenMap);
+                                const token = tokenMap[selectedToken];
                                 if (!token) return;
                                 token.pos = pos;
                             }

@@ -1,5 +1,4 @@
 import React, {FC, ReactElement, useState, useEffect} from "react";
-import {flatten} from "lodash/fp";
 import { Coordinate, GridData} from "../types";
 import {inLegalCells} from "../utils";
 
@@ -33,7 +32,7 @@ export const Grid: FC<GridProps> = React.memo(({gridData, legalCells, children})
     return (
         <g transform={`translate(${gridData.xOffset},${gridData.yOffset})`}>
             {
-                flatten(cellsMap).map((cell: CellProps) => 
+                cellsMap.flat().map((cell: CellProps) => 
                     <rect key={`c${cell.x}${cell.y}`} x={cell.x * gridData.xCellWidth} y={cell.y * gridData.yCellHeight} width={gridData.xCellWidth}  height={gridData.yCellHeight} stroke="white" strokeWidth={0} fill={inLegalCells(legalCells, cell.x, cell.y) ? "red": cell.color}>
                             <animate attributeName="opacity"
                                to="0.5" begin="mouseover" dur="0.15s" fill="freeze"/>
