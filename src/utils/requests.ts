@@ -18,6 +18,10 @@ export function sendChat(socket: any, room: string, username: string, message: s
     socket.emit("request-chat", {room, username, message});
 }
 
+export function changeName(socket: any, room: string, name: string): void {
+    socket.emit("request-namechange", {socket: socket.id, room, name});
+}
+
 export function requestRandomString(words: number, callback: (str: string) => void): void {
     fetch(`http://localhost:3001/random?n=${words}`)
     .then(res => res.text())

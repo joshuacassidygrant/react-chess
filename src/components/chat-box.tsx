@@ -4,6 +4,7 @@ import styled from "styled-components";
 import {Chat} from "../types";
 import { sendChat } from "../utils";
 import { TextInput } from "./text-input";
+import {execute, isLegalFunctionSyntax} from "../utils/command";
 
 type ChatProps = {
     socket: any
@@ -39,6 +40,12 @@ export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement 
     const [messages, setMessages] = useState<Chat[]>([]);
     const [currentInput, setCurrentInput] = useState("");
 
+    const context = {
+        socket,
+        room,
+        username
+    }
+
     useEffect(() => {
         socket.on("approved-chat", function(chat: any) {
            setMessages(messages => [...messages, {message: chat.message, username: chat.username}])
@@ -63,8 +70,13 @@ export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement 
                         <TextInput style={{width: "2fr"}} value={currentInput} onChange={(e) => setCurrentInput(e.target.value)}/>
                         <input type="submit" style={{  height:"30px", width: "70px"}} onClick={(e) => {
                             if (currentInput === "") return;
-                            sendChat(socket, room, username, currentInput);
                             setCurrentInput("");
+                            if (isLegalFunctionSyntax(currentInput)) {
+                                const output = execute(currentInput, context);
+                                setMessages(messages => [...messages, {message: output, username}])
+                            } else {
+                                sendChat(socket, room, username, currentInput);
+                            }
                         }}/>
                     </form>
                 </StyledChatInput>
