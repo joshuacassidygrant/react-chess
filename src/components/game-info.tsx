@@ -19,9 +19,9 @@ export const GameInfo: FC<GameInfoProps> = ({turn, captured, currentPlayer, curr
                 {
                     currentState === GameState.NOT_STARTED ? ("New game! White moves first.") :
                     currentState === GameState.PLAYING ?  (`Turn ${turn}, ${Players[turn % 2].name}'s move.`):
-                    currentState === GameState.WHITE_WINS ? (<>Checkmate. White wins! <a href="#" onClick={() => requestRestart()}>Play again?</a></>) :
-                    currentState === GameState.BLACK_WINS ? (<>Checkmate. Black wins! <a href="#" onClick={() => requestRestart()}>Play again?</a></>) :
-                    currentState === GameState.STALEMATE ? (<>Stalemate! <a href="#" onClick={() => requestRestart()}>Play again?</a></>) : "Error!" 
+                    currentState === GameState.WHITE_WINS ? (<>Checkmate. White wins! <button onClick={() => requestRestart()}>Play again?</button></>) :
+                    currentState === GameState.BLACK_WINS ? (<>Checkmate. Black wins! <button  onClick={() => requestRestart()}>Play again?</button></>) :
+                    currentState === GameState.STALEMATE ? (<>Stalemate! <button onClick={() => requestRestart()}>Play again?</button></>) : "Error!" 
                 }
             </div>
             <div style={{display:"flex"}}>

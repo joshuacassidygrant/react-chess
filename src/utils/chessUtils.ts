@@ -1,6 +1,6 @@
-import {TokenData, TokenMap, Coordinate, CoordinateMove, GridData} from "../types";
+import { TokenData, TokenMap, Coordinate, CoordinateMove, GridData } from "../types";
 import { GameState } from "../types/gameState";
-import {emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, removeTokenData, updateTokenData, coordinateInList} from "./index";
+import { emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, removeTokenData, updateTokenData, coordinateInList } from "./index";
 
 export function getOpponent(player: number) {
     return player ? 0 : 1;
@@ -13,24 +13,24 @@ export function playerFlip(player: number): number {
 export function makeLine(xDelta: number, yDelta: number, token: TokenData, tokenMap: TokenMap): Coordinate[] {
     const moves: Coordinate[] = [];
     if (!token.coord) return moves;
-    let current: Coordinate = {x: token.coord.x + xDelta, y: token.coord.y + yDelta, grid: token.coord.grid};
+    let current: Coordinate = { x: token.coord.x + xDelta, y: token.coord.y + yDelta, grid: token.coord.grid };
     while (emptyCoordinate(current, tokenMap) && token.coord.grid.coordinateInGridBounds(current)) {
         moves.push(current);
-        current = {x: current.x + xDelta, y: current.y + yDelta, grid: token.coord.grid};
+        current = { x: current.x + xDelta, y: current.y + yDelta, grid: token.coord.grid };
     }
     if (pieceOfColorAtCoordinate(current, getOpponent(token.player), tokenMap)) moves.push(current);
 
     return moves;
 }
 
-export function makeJump(xDelta: number, yDelta:number, coord: Coordinate, blockingPlayer: number, tokenMap: TokenMap): Coordinate[] {
-    const newCoord = {x: coord.x + xDelta, y:coord.y + yDelta, grid: coord.grid};
+export function makeJump(xDelta: number, yDelta: number, coord: Coordinate, blockingPlayer: number, tokenMap: TokenMap): Coordinate[] {
+    const newCoord = { x: coord.x + xDelta, y: coord.y + yDelta, grid: coord.grid };
     return !pieceOfColorAtCoordinate(newCoord, blockingPlayer, tokenMap) ? [newCoord] : [];
 }
 
 export function maybeCaptureTokenOfColorAtCoordinate(coord: Coordinate, capturePlayer: number, tokenMap: TokenMap): TokenMap {
     const capture = Object.entries(tokenMap).find(([key, entry]) => {
-        return entry.player === capturePlayer && entry.coord && entry.coord.x === coord.x && entry.coord.y === coord.y  && entry.coord.grid.id === coord.grid.id
+        return entry.player === capturePlayer && entry.coord && entry.coord.x === coord.x && entry.coord.y === coord.y && entry.coord.grid.id === coord.grid.id
     });
     if (!capture) return tokenMap;
     delete tokenMap[capture[0]];
@@ -42,15 +42,15 @@ export function inLegalCells(legalCells: Coordinate[], x: number, y: number): bo
 }
 
 export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap, addTakenPiece: (d: TokenData) => void): TokenMap {
-    const token = getTokenAtCoordinate({x: move.from[0], y: move.from[1], grid}, tokenMap);
-    if(!token) return tokenMap;
+    const token = getTokenAtCoordinate({ x: move.from[0], y: move.from[1], grid }, tokenMap);
+    if (!token) return tokenMap;
     const tokenData = token[1];
-    const captureToken = getTokenAtCoordinate({x: move.to[0], y: move.to[1], grid}, tokenMap);
+    const captureToken = getTokenAtCoordinate({ x: move.to[0], y: move.to[1], grid }, tokenMap);
     if (captureToken !== undefined && captureToken[1].player === getOpponent(tokenData.player)) {
         tokenMap = removeTokenData(tokenMap, captureToken[0]);
         addTakenPiece(captureToken[1]);
     }
-    tokenMap = updateTokenData(tokenMap, {[token[0]]: tokenData.setCoordAndReturn({x: move.to[0], y: move.to[1], grid})});
+    tokenMap = updateTokenData(tokenMap, { [token[0]]: tokenData.setCoordAndReturn({ x: move.to[0], y: move.to[1], grid }) });
 
     return tokenMap;
 }
@@ -86,7 +86,7 @@ export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenDat
     }
     // remove any move that  would put self in check
     const testToken = new TokenData(tokenData.piece, tokenData.player, tokenData.coord);
-    return coords.filter(c => !checkedColors(updateTokenData({...tokenMap}, {[tokenId]: testToken.setCoordAndReturn(c)})).includes(tokenData.player));
+    return coords.filter(c => !checkedColors(updateTokenData({ ...tokenMap }, { [tokenId]: testToken.setCoordAndReturn(c) })).includes(tokenData.player));
 
 }
 
@@ -105,17 +105,17 @@ export function checkGameState(state: GameState, tokenMap: TokenMap): GameState 
         if (Object.entries(tokenMap)
             .filter(e => e[1].player === 0)
             .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)) {
-                return GameState.BLACK_WINS;
-            }
-    } 
-    
+            return GameState.BLACK_WINS;
+        }
+    }
+
     if (checkedColors(tokenMap).includes(1)) {
         // Black is checked; check for checkmate
         if (Object.entries(tokenMap)
             .filter(e => e[1].player === 1)
             .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].piece.getLegalMoves(e[0], tokenMap, grid)).length === 0)) {
-                return GameState.WHITE_WINS;
-            }
+            return GameState.WHITE_WINS;
+        }
 
     }
     // TODO stalemate

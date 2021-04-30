@@ -64,7 +64,7 @@ export const Game: FC = (): ReactElement => {
     }, []);
 
     useEffect(() => {
-        setCurrentGameState(checkGameState(currentGameState, tokenMap));
+        setCurrentGameState(gs => checkGameState(gs, tokenMap));
     }, [tokenMap])
 
     return (
