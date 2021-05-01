@@ -1,10 +1,14 @@
 import React, { createContext, useReducer, useContext} from "react";
+import { startState } from "../game/start";
 import { GridData, TokenMap, User } from "../types";
 import { GameState } from "../types/gameState";
 
 type Action = {type: "init", payload: State} | 
             {type: "change-room", payload: string | null} |
             {type: "set-user", payload: User | null} |
+            {type: "set-gamestate", payload: GameState} |
+            {type: "set-tokenmap", payload: TokenMap} |
+            {type: "start-game"} |
             {type: "move", payload: any};
 type Dispatch = (action: Action) => void;
 export type State = {
@@ -13,7 +17,7 @@ export type State = {
     user: User | null,
     room: string | null,
     turn: number,
-    currentGameState: GameState | null,
+    currentGameState: GameState,
     currentTokenMap: TokenMap | null,
     roomUsers: User[]
 }
@@ -37,8 +41,32 @@ function gameReducer(state: State, action: Action) {
                 ...state,
                 user: action.payload
             }
-        default:
-            throw new Error(`Unlawful action: ${action.type}`)
+        case "set-gamestate":
+            // TODO: validate
+            return {
+                ...state,
+                currentGameState: action.payload
+            }
+        case "set-tokenmap":
+            //TODO: validate
+            return {
+                ...state,
+                currentTokenMap: action.payload
+            }
+        case "start-game":
+            if (!state.grid) {
+                throw new Error("No grid defined!");
+            }
+            return {
+                ...state,
+                turn: 0,
+                currentGameState: GameState.NOT_STARTED,
+                currentTokenMap: startState(state.grid),
+            }
+        case "move":
+            //TODO: validate
+            // TODO alter state
+            return state;
     }
 }
 
@@ -49,7 +77,7 @@ export function GameContextProvider({children}: GameContextProviderProps) {
         user: null,
         room: null,
         turn: -1,
-        currentGameState: null,
+        currentGameState: GameState.NOT_STARTED,
         currentTokenMap: null,
         roomUsers: []
     });

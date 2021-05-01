@@ -29,16 +29,13 @@ const socket = io(socketEndpoint, {
 
 export const Game: FC = (): ReactElement => {
     const ctx = useGameContext();
-    const {room, user} = ctx.state;
+    const {room, user, currentGameState} = ctx.state;
 
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [turn, setTurn] = useState<number>(0);
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [tokenMap, setTokenMap]= useState<TokenMap>(startState(grid));
     const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
-    //const [currentPlayer, setCurrentPlayer] = useState<User | null>(null);
-    //const [currentRoom, setCurrentRoom] = useState("");
-    const [currentGameState, setCurrentGameState] = useState<GameState>(GameState.NOT_STARTED);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
@@ -56,8 +53,9 @@ export const Game: FC = (): ReactElement => {
             currentTokenMap: startState(grid),
             roomUsers: []
         }});
-        
 
+        ctx.dispatch({type: "start-game"});
+        
         socket.on("approved-move", function(move: CoordinateMove) {
             setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
             setTurn(turn => move.turn + 1)
@@ -68,10 +66,8 @@ export const Game: FC = (): ReactElement => {
         });
 
         socket.on("restart-game", function() {
-            setTokenMap(startState(grid));
             setTakenPieces([]);
-            setTurn(0);
-            setCurrentGameState(GameState.NOT_STARTED);
+            ctx.dispatch({type: "start-game"});
         });
 
         return () => {
@@ -82,12 +78,12 @@ export const Game: FC = (): ReactElement => {
     }, [])
 
     useEffect(() => {
-        setCurrentGameState(gs => checkGameState(gs, tokenMap));
+        ctx.dispatch({type: "set-gamestate", payload: checkGameState(currentGameState, tokenMap)});
     }, [tokenMap])
 
     return (
         <div>
-            {room === ""  || user === null || user.role === -1 ? (<StartPanel users={users}/>) :
+            {!room || !user || user.role === -1 ? (<StartPanel users={users}/>) :
             <Box width={1100} mx="auto">
                 <GameInfo turn={turn} captured={takenPieces} requestRestart={() =>socket.emit("request-restart", room)}/>
                 <Flex width={1100} mx="auto">
