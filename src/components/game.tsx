@@ -1,4 +1,4 @@
-import React, {FC, ReactElement, useState, useEffect} from "react";
+import React, {FC, ReactElement, useState, useEffect, useContext} from "react";
 import {Board} from "./board";
 import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
 import {startState} from "../game/start";
@@ -9,6 +9,7 @@ import { UserList } from "./user-list";
 import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
 import { GameState } from "../types/gameState";
+import { GameContext, State } from "./game-context";
 
 const io = require("socket.io-client");
 
@@ -25,7 +26,11 @@ const socket = io(socketEndpoint, {
 });
 
 
+
 export const Game: FC = (): ReactElement => {
+    const ctx = useContext(GameContext);
+
+
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [turn, setTurn] = useState<number>(0);
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
@@ -39,7 +44,20 @@ export const Game: FC = (): ReactElement => {
     });
     const [users, setUsers] = useState<User[]>([]);
 
+
     useEffect(() => {
+        if (ctx && ctx.dispatch) {
+            ctx.dispatch({type: "init", payload: {
+                socket,
+                grid,
+                currentUser: null,
+                currentRoom: "",
+                currentGameState: GameState.NOT_STARTED,
+                currentTokenMap: startState(grid),
+                roomUsers: []
+            }});
+        }
+
         socket.on("approved-move", function(move: CoordinateMove) {
             setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
             setTurn(turn => move.turn + 1)
@@ -61,7 +79,7 @@ export const Game: FC = (): ReactElement => {
             socket.emit("leave-room", currentRoom);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [])
 
     useEffect(() => {
         setCurrentGameState(gs => checkGameState(gs, tokenMap));
@@ -136,7 +154,6 @@ export const Game: FC = (): ReactElement => {
 
             </Box>
             }
-
         </div>
     )
 

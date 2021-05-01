@@ -2,6 +2,7 @@ import React from 'react';
 import reportWebVitals from "./reportWebVitals";
 import "./App.css";
 import {Game} from "./components/game";
+import { GameContextProvider } from './components/game-context';
 
 function App() {
   // temp
@@ -13,7 +14,9 @@ function App() {
         REACT CHESS by JOSHUA
       </header>
       <div className="Main">
-        <Game/>
+        <GameContextProvider>
+          <Game/>
+        </GameContextProvider>
       </div>
     </div>
   );

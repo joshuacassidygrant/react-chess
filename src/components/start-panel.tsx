@@ -1,9 +1,10 @@
-import React, {FC, ReactElement, useEffect, useState} from "react";
+import React, {FC, ReactElement, useEffect, useState, useContext} from "react";
 import {Flex, Box} from "rebass";
 import { User } from "../types";
 import { chooseRole, joinRoom, requestRandomString } from "../utils";
 import { RandomButton } from "./random-button";
 import { TextInput } from "./text-input";
+import {GameContext} from "./game-context";
 
 export type StartPanelProps = {
     socket: any,
@@ -15,7 +16,8 @@ export type StartPanelProps = {
 }
 
 export const StartPanel: FC<StartPanelProps> = ({socket, currentRoom, setCurrentRoom, currentPlayer, setCurrentPlayer, users}): ReactElement => {
-
+    const ctx = useContext(GameContext);
+    console.log(ctx);
     const [currentRoomInput, setCurrentRoomInput] = useState(currentRoom);
     const [currentNameInput, setCurrentNameInput] = useState("");
 
