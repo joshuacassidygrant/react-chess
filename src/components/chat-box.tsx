@@ -5,12 +5,8 @@ import {Chat} from "../types";
 import { sendChat } from "../utils";
 import { TextInput } from "./text-input";
 import {execute, isLegalFunctionSyntax} from "../utils/command";
+import {useGameContext} from "../components/game-context";
 
-type ChatProps = {
-    socket: any
-    room: string,
-    username: string
-}
 
 const StyledChatBox = styled(Box)`
     position: relative;
@@ -35,21 +31,18 @@ const StyledChatInput = styled(Flex)`
     height: 30px;
 `;
 
-export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement => {
+export const ChatBox : FC = (): ReactElement => {
+    const ctx = useGameContext();
+    const {room, socket, user} = ctx.state;
 
     const [messages, setMessages] = useState<Chat[]>([]);
     const [currentInput, setCurrentInput] = useState("");
 
-    const context = {
-        socket,
-        room,
-        username
-    }
-
     useEffect(() => {
         socket.on("approved-chat", function(chat: any) {
-           setMessages(messages => [...messages, {message: chat.message, username: chat.username}])
+            setMessages(messages => [...messages, {message: chat.message, username: chat.username}])
         });
+    
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -72,10 +65,11 @@ export const ChatBox : FC<ChatProps> = ({socket, room, username}): ReactElement 
                             if (currentInput === "") return;
                             setCurrentInput("");
                             if (isLegalFunctionSyntax(currentInput)) {
-                                const output = execute(currentInput, context);
-                                setMessages(messages => [...messages, {message: output, username}])
+                                const output = execute(currentInput, ctx);
+                                setMessages(messages => [...messages, {message: output, username: user ? user.name : "Unknown:"}])
                             } else {
-                                sendChat(socket, room, username, currentInput);
+                                if (!room) return;
+                                sendChat(socket, room, user ? user.name : "Unknown", currentInput);
                             }
                         }}/>
                     </form>

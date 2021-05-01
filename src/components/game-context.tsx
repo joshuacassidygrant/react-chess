@@ -1,14 +1,18 @@
-import React, { FunctionComponent, createContext, useReducer, useContext} from "react";
+import React, { createContext, useReducer, useContext} from "react";
 import { GridData, TokenMap, User } from "../types";
 import { GameState } from "../types/gameState";
 
-type Action = {type: "init", payload: State} | {type: "move", payload: any};
+type Action = {type: "init", payload: State} | 
+            {type: "change-room", payload: string | null} |
+            {type: "set-user", payload: User | null} |
+            {type: "move", payload: any};
 type Dispatch = (action: Action) => void;
 export type State = {
     socket: any | null,
     grid: GridData | null,
-    currentUser: User | null,
-    currentRoom: string | null,
+    user: User | null,
+    room: string | null,
+    turn: number,
     currentGameState: GameState | null,
     currentTokenMap: TokenMap | null,
     roomUsers: User[]
@@ -20,8 +24,19 @@ export const GameContext = createContext<{state: State; dispatch: Dispatch} | un
 function gameReducer(state: State, action: Action) {
     switch (action.type) {
         case "init":
-            console.log(action);
             return action.payload;
+        case "change-room":
+            // TODO: validate room
+            return {
+                ...state,
+                room: action.payload
+            }
+        case "set-user":
+            // TODO: validate user
+            return {
+                ...state,
+                user: action.payload
+            }
         default:
             throw new Error(`Unlawful action: ${action.type}`)
     }
@@ -31,8 +46,9 @@ export function GameContextProvider({children}: GameContextProviderProps) {
     const [state, dispatch] = useReducer(gameReducer, {
         socket: null,
         grid: null,
-        currentUser: null,
-        currentRoom: null,
+        user: null,
+        room: null,
+        turn: -1,
         currentGameState: null,
         currentTokenMap: null,
         roomUsers: []

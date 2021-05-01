@@ -9,7 +9,7 @@ import { UserList } from "./user-list";
 import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
 import { GameState } from "../types/gameState";
-import { GameContext, State } from "./game-context";
+import { useGameContext} from "./game-context";
 
 const io = require("socket.io-client");
 
@@ -28,16 +28,16 @@ const socket = io(socketEndpoint, {
 
 
 export const Game: FC = (): ReactElement => {
-    const ctx = useContext(GameContext);
-
+    const ctx = useGameContext();
+    const {room, user} = ctx.state;
 
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [turn, setTurn] = useState<number>(0);
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [tokenMap, setTokenMap]= useState<TokenMap>(startState(grid));
     const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
-    const [currentPlayer, setCurrentPlayer] = useState<User | null>(null);
-    const [currentRoom, setCurrentRoom] = useState("");
+    //const [currentPlayer, setCurrentPlayer] = useState<User | null>(null);
+    //const [currentRoom, setCurrentRoom] = useState("");
     const [currentGameState, setCurrentGameState] = useState<GameState>(GameState.NOT_STARTED);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
@@ -46,17 +46,17 @@ export const Game: FC = (): ReactElement => {
 
 
     useEffect(() => {
-        if (ctx && ctx.dispatch) {
-            ctx.dispatch({type: "init", payload: {
-                socket,
-                grid,
-                currentUser: null,
-                currentRoom: "",
-                currentGameState: GameState.NOT_STARTED,
-                currentTokenMap: startState(grid),
-                roomUsers: []
-            }});
-        }
+        ctx.dispatch({type: "init", payload: {
+            socket,
+            grid,
+            turn: 0,
+            user: null,
+            room: null,
+            currentGameState: GameState.NOT_STARTED,
+            currentTokenMap: startState(grid),
+            roomUsers: []
+        }});
+        
 
         socket.on("approved-move", function(move: CoordinateMove) {
             setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
@@ -76,7 +76,7 @@ export const Game: FC = (): ReactElement => {
 
         return () => {
             // clean up goes here
-            socket.emit("leave-room", currentRoom);
+            socket.emit("leave-room", room);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -87,16 +87,16 @@ export const Game: FC = (): ReactElement => {
 
     return (
         <div>
-            {currentRoom === ""  || currentPlayer === null || currentPlayer.role === -1 ? (<StartPanel users={users} currentPlayer={currentPlayer} setCurrentPlayer={setCurrentPlayer} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} socket={socket} />) :
+            {room === ""  || user === null || user.role === -1 ? (<StartPanel users={users}/>) :
             <Box width={1100} mx="auto">
-                <GameInfo currentState={currentGameState}  turn={turn} captured={takenPieces} currentPlayer={currentPlayer} requestRestart={() =>socket.emit("request-restart", currentRoom)}/>
+                <GameInfo turn={turn} captured={takenPieces} requestRestart={() =>socket.emit("request-restart", room)}/>
                 <Flex width={1100} mx="auto">
                     <Box width={800} >
                         <Board 
                         tokenMap={tokenMap} gridData={grid} legalCells={legalCells}
                         mouseUp={
                             (e) => {
-                                if(!selectedToken) return;
+                                if(!selectedToken || !room) return;
                                 const tokenData: TokenData = tokenMap[selectedToken];
                 
                                 if(!grid.coordinateInGridBounds(hoverCell)) {
@@ -110,7 +110,7 @@ export const Game: FC = (): ReactElement => {
                                     const newMap = doMove(move, grid, tokenMap, (d) => {setTakenPieces([...takenPieces, d])});
                                     setTokenMap(newMap);
                                     setTurn(turn => move.turn + 1)
-                                    emitMove(socket, currentRoom, move);
+                                    emitMove(socket, room, move);
 
                                 }
                                 tokenMap[selectedToken].isSelected = false;
@@ -132,7 +132,7 @@ export const Game: FC = (): ReactElement => {
                         } 
                         tokenClick={
                             (e, id) =>{
-                                if (turn % 2 === currentPlayer.role && tokenMap[id].player === turn % 2) {
+                                if (turn % 2 === user.role && tokenMap[id].player === turn % 2) {
                                     setSelectedToken(id);
                                     const token = tokenMap[id];
                                     token.isSelected = true;
@@ -142,12 +142,12 @@ export const Game: FC = (): ReactElement => {
                         }/>
                     </Box>
                     <Box width={300}>
-                        <h3>Room: {currentRoom}</h3>
-                        <ChatBox socket={socket} room={currentRoom} username={currentPlayer.name}  />
+                        <h3>Room: {room}</h3>
+                        <ChatBox />
                         <UserList users={users} />
                         <button onClick={() => {
-                            socket.emit("leave-room", currentRoom);
-                            setCurrentRoom("");
+                            socket.emit("leave-room", room);
+                            ctx.dispatch({type: "change-room", payload: null});
                         }}>Leave Room</button>
                     </Box>
                 </Flex>
