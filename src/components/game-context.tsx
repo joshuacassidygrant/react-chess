@@ -15,7 +15,7 @@ type Action = {type: "init", payload: State} |
 type Dispatch = (action: Action) => void;
 export type State = {
     socket: any | null,
-    grid: GridData | null,
+    grid: GridData,
     user: User | null,
     room: string | null,
     turn: number,
@@ -88,7 +88,7 @@ function gameReducer(state: State, action: Action) {
 export function GameContextProvider({children}: GameContextProviderProps) {
     const [state, dispatch] = useReducer(gameReducer, {
         socket: null,
-        grid: null,
+        grid: new GridData("init", 1, 1, 1, 1),
         user: null,
         room: null,
         turn: -1,

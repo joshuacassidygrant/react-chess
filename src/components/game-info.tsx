@@ -1,6 +1,7 @@
 import {FC, ReactElement} from "react";
 import { Box } from "rebass";
 import {Players} from "../game/players";
+import { startState } from "../game/start";
 import { GameState } from "../types/gameState";
 import {useGameContext} from "./game-context";
 
@@ -8,10 +9,31 @@ type GameInfoProps = {
     requestRestart: () => void
 }
 
+type MaterialLineProps = {
+    player: number
+}
+
+
+const MaterialLine: FC<MaterialLineProps> = ({player}) : ReactElement => {
+    const ctx = useGameContext();
+    const {tokenMap, grid} = ctx.state;
+    const start = startState(grid);
+    const materialValue = Object.values(tokenMap).filter(v => v.player === player).map(v => v.piece.pointValue).reduce((tot, num) => {return tot + num}, 0)
+    // TODO: account for promotion
+    return (<> ({materialValue})
+        {Object.keys(start).filter(k => start[k].player === player).map(k => 
+             <span key={k} style={{color: k in tokenMap ? "inherit" : "red"}}>{start[k].piece.symbol}</span>
+        )}
+    </>)
+    
+    
+
+}
+
 
 export const GameInfo: FC<GameInfoProps> = ({requestRestart}): ReactElement => {
     const ctx = useGameContext();
-    const {currentGameState, user, turn} = ctx.state;
+    const {currentGameState, tokenMap, user, turn, grid} = ctx.state;
 
     const renderStatusLine = () => {
         switch(currentGameState) {
@@ -31,6 +53,9 @@ export const GameInfo: FC<GameInfoProps> = ({requestRestart}): ReactElement => {
         }
     }
 
+    const renderMaterialLine = (player: number) => {
+
+    }
 
     return (
         <Box width={1100} mx="auto" style={{margin: "24px 0"}}>
@@ -38,13 +63,13 @@ export const GameInfo: FC<GameInfoProps> = ({requestRestart}): ReactElement => {
                 {renderStatusLine()}
             </div>
             <div style={{display:"flex"}}>
-                <div style={{width:"50%", fontSize: "24px", color: "#999", height: "42px"}}>
+                <div style={{width:"50%", fontSize: "22px", color: "#999", height: "42px"}}>
                     WHITE {(user && user.role === 0) && "(YOU)"}<br/>
-                    MATERIAL: {/*TODOcaptured.filter(t => t.player === 0).map((t, i) => <span key={i}>{t.piece.symbol}</span>)*/}
+                    MATERIAL: <MaterialLine player={0} />
                 </div>
-                <div style={{width:"50%", fontSize: "24px", color: "#000", height: "42px"}}>
+                <div style={{width:"50%", fontSize: "22px", color: "#000", height: "42px"}}>
                 BLACK {(user && user.role === 1) && "(YOU)"}<br/>
-                MATERIAL:{/*captured.filter(t => t.player === 1).map(t => t.piece.symbol)TODO*/} 
+                MATERIAL: <MaterialLine player={1} /> 
                 </div>
             </div>
         </Box>
