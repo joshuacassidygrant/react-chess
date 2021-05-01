@@ -1,8 +1,10 @@
-import React, {FC, ReactElement, useState, useEffect} from "react";
+import {FC, ReactElement, useState, useEffect} from "react";
+import {io} from "socket.io-client";
+
 import {Board} from "./board";
-import {TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
+import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {updateTokenData, coordinateInList, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -11,25 +13,16 @@ import { Box, Flex } from "rebass";
 import { GameState } from "../types/gameState";
 import { useGameContext} from "./game-context";
 
-const io = require("socket.io-client");
 
 // GAME CONSTANTS
 const xWidthCells:number = 8;
 const yHeightCells:number = 8;
 const height:number = 600;
 const width:number = 600;
-const grid = new GridData("chessGrid", height, width, xWidthCells, yHeightCells);
-
-const socket = io(socketEndpoint, { 
-    transport : ['websocket'],  
-    withCredentials: true
-});
-
-
 
 export const Game: FC = (): ReactElement => {
     const ctx = useGameContext();
-    const {room, user, currentGameState, tokenMap, turn} = ctx.state;
+    const {room, user, grid, socket, currentGameState, tokenMap, turn} = ctx.state;
 
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
@@ -39,6 +32,10 @@ export const Game: FC = (): ReactElement => {
 
 
     useEffect(() => {
+        // First load initialization
+        const socket = io(socketEndpoint);
+        const grid = new GridData("chessGrid", height, width, xWidthCells, yHeightCells);
+
         ctx.dispatch({type: "init", payload: {
             socket,
             grid,
@@ -79,11 +76,11 @@ export const Game: FC = (): ReactElement => {
         <div>
             {!room || !user || user.role === -1 ? (<StartPanel />) :
             <Box width={1100} mx="auto">
-                <GameInfo requestRestart={() =>socket.emit("request-restart", room)}/>
+                <GameInfo/>
                 <Flex width={1100} mx="auto">
                     <Box width={800} >
                         <Board 
-                        tokenMap={tokenMap} gridData={grid} legalCells={legalCells}
+                        highlightCells={legalCells}
                         mouseUp={
                             (e) => {
                                 if(!selectedToken || !room) return;
