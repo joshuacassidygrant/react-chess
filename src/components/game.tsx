@@ -1,8 +1,8 @@
-import React, {FC, ReactElement, useState, useEffect, useContext} from "react";
+import React, {FC, ReactElement, useState, useEffect} from "react";
 import {Board} from "./board";
-import {TokenMap, TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
+import {TokenData, Coordinate, GridData, CoordinateMove, User} from "../types/";
 import {startState} from "../game/start";
-import {updateTokenData, coordinateInList, doMove, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
+import {updateTokenData, coordinateInList, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -29,13 +29,10 @@ const socket = io(socketEndpoint, {
 
 export const Game: FC = (): ReactElement => {
     const ctx = useGameContext();
-    const {room, user, currentGameState} = ctx.state;
+    const {room, user, currentGameState, tokenMap, turn} = ctx.state;
 
     const [selectedToken, setSelectedToken] = useState<string>("");
-    const [turn, setTurn] = useState<number>(0);
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
-    const [tokenMap, setTokenMap]= useState<TokenMap>(startState(grid));
-    const [takenPieces, setTakenPieces] = useState<TokenData[]>([]);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
@@ -50,15 +47,14 @@ export const Game: FC = (): ReactElement => {
             user: null,
             room: null,
             currentGameState: GameState.NOT_STARTED,
-            currentTokenMap: startState(grid),
+            tokenMap: startState(grid),
             roomUsers: []
         }});
 
         ctx.dispatch({type: "start-game"});
         
         socket.on("approved-move", function(move: CoordinateMove) {
-            setTokenMap(tokenMap => doMove(move, grid, tokenMap, (d) => {setTakenPieces(takenPieces => [...takenPieces, d])}));
-            setTurn(turn => move.turn + 1)
+            ctx.dispatch({type: "move", payload: move})
         });
         
         socket.on("users-changed", function(users: any[]) {
@@ -66,7 +62,6 @@ export const Game: FC = (): ReactElement => {
         });
 
         socket.on("restart-game", function() {
-            setTakenPieces([]);
             ctx.dispatch({type: "start-game"});
         });
 
@@ -85,7 +80,7 @@ export const Game: FC = (): ReactElement => {
         <div>
             {!room || !user || user.role === -1 ? (<StartPanel users={users}/>) :
             <Box width={1100} mx="auto">
-                <GameInfo turn={turn} captured={takenPieces} requestRestart={() =>socket.emit("request-restart", room)}/>
+                <GameInfo requestRestart={() =>socket.emit("request-restart", room)}/>
                 <Flex width={1100} mx="auto">
                     <Box width={800} >
                         <Board 
@@ -96,16 +91,13 @@ export const Game: FC = (): ReactElement => {
                                 const tokenData: TokenData = tokenMap[selectedToken];
                 
                                 if(!grid.coordinateInGridBounds(hoverCell)) {
-                                    const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-                                    setTokenMap(updateTokenData(tokenMap, {[selectedToken]: tokenData.setPosAndReturn(pos)}));
-                                    // TODO: this lets us leave tokens randomly off the board...
+                                    // Currently  not allowing offgrid movement
+                                    return;
                                 } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
                                     const move = toMove(turn, originalCoord, hoverCell);
-                                    const newMap = doMove(move, grid, tokenMap, (d) => {setTakenPieces([...takenPieces, d])});
-                                    setTokenMap(newMap);
-                                    setTurn(turn => move.turn + 1)
+                                    ctx.dispatch({type: "move", payload: move})
                                     emitMove(socket, room, move);
 
                                 }

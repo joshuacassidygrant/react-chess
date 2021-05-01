@@ -1,7 +1,8 @@
 import React, { createContext, useReducer, useContext} from "react";
 import { startState } from "../game/start";
-import { GridData, TokenMap, User } from "../types";
+import { CoordinateMove, GridData, TokenMap, User } from "../types";
 import { GameState } from "../types/gameState";
+import { doMove } from "../utils";
 
 type Action = {type: "init", payload: State} | 
             {type: "change-room", payload: string | null} |
@@ -9,7 +10,7 @@ type Action = {type: "init", payload: State} |
             {type: "set-gamestate", payload: GameState} |
             {type: "set-tokenmap", payload: TokenMap} |
             {type: "start-game"} |
-            {type: "move", payload: any};
+            {type: "move", payload: CoordinateMove};
 type Dispatch = (action: Action) => void;
 export type State = {
     socket: any | null,
@@ -18,7 +19,7 @@ export type State = {
     room: string | null,
     turn: number,
     currentGameState: GameState,
-    currentTokenMap: TokenMap | null,
+    tokenMap: TokenMap,
     roomUsers: User[]
 }
 type GameContextProviderProps = {children: React.ReactNode}
@@ -65,6 +66,14 @@ function gameReducer(state: State, action: Action) {
             }
         case "move":
             //TODO: validate
+            if (!state.grid) {
+                throw new Error("No grid defined!");
+            }
+            return {
+                ...state,
+                turn: action.payload.turn + 1,
+                tokenMap: doMove(action.payload, state.grid, state.tokenMap)
+            }
             // TODO alter state
             return state;
     }
@@ -78,7 +87,7 @@ export function GameContextProvider({children}: GameContextProviderProps) {
         room: null,
         turn: -1,
         currentGameState: GameState.NOT_STARTED,
-        currentTokenMap: null,
+        tokenMap: {},
         roomUsers: []
     });
     const value = {state, dispatch}

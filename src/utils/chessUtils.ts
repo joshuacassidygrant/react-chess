@@ -41,14 +41,13 @@ export function inLegalCells(legalCells: Coordinate[], x: number, y: number): bo
     return !!legalCells.find(c => c.x === x && c.y === y);
 }
 
-export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap, addTakenPiece: (d: TokenData) => void): TokenMap {
+export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap): TokenMap {
     const token = getTokenAtCoordinate({ x: move.from[0], y: move.from[1], grid }, tokenMap);
     if (!token) return tokenMap;
     const tokenData = token[1];
     const captureToken = getTokenAtCoordinate({ x: move.to[0], y: move.to[1], grid }, tokenMap);
     if (captureToken !== undefined && captureToken[1].player === getOpponent(tokenData.player)) {
         tokenMap = removeTokenData(tokenMap, captureToken[0]);
-        addTakenPiece(captureToken[1]);
     }
     tokenMap = updateTokenData(tokenMap, { [token[0]]: tokenData.setCoordAndReturn({ x: move.to[0], y: move.to[1], grid }) });
 
