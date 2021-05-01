@@ -36,7 +36,6 @@ export const Game: FC = (): ReactElement => {
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
-    const [users, setUsers] = useState<User[]>([]);
 
 
     useEffect(() => {
@@ -57,8 +56,8 @@ export const Game: FC = (): ReactElement => {
             ctx.dispatch({type: "move", payload: move})
         });
         
-        socket.on("users-changed", function(users: any[]) {
-            setUsers(Object.values(users));
+        socket.on("users-changed", function(users: any) {
+            ctx.dispatch({type: "set-users", payload: Object.values(users)});
         });
 
         socket.on("restart-game", function() {
@@ -78,7 +77,7 @@ export const Game: FC = (): ReactElement => {
 
     return (
         <div>
-            {!room || !user || user.role === -1 ? (<StartPanel users={users}/>) :
+            {!room || !user || user.role === -1 ? (<StartPanel />) :
             <Box width={1100} mx="auto">
                 <GameInfo requestRestart={() =>socket.emit("request-restart", room)}/>
                 <Flex width={1100} mx="auto">
@@ -132,7 +131,7 @@ export const Game: FC = (): ReactElement => {
                     <Box width={300}>
                         <h3>Room: {room}</h3>
                         <ChatBox />
-                        <UserList users={users} />
+                        <UserList />
                         <button onClick={() => {
                             socket.emit("leave-room", room);
                             ctx.dispatch({type: "change-room", payload: null});

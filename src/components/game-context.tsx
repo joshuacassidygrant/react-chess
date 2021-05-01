@@ -10,6 +10,7 @@ type Action = {type: "init", payload: State} |
             {type: "set-gamestate", payload: GameState} |
             {type: "set-tokenmap", payload: TokenMap} |
             {type: "start-game"} |
+            {type: "set-users", payload: User[]} |
             {type: "move", payload: CoordinateMove};
 type Dispatch = (action: Action) => void;
 export type State = {
@@ -54,6 +55,13 @@ function gameReducer(state: State, action: Action) {
                 ...state,
                 currentTokenMap: action.payload
             }
+        case "set-users":
+            //TODO: validate
+            console.log(action);
+            return {
+                ...state,
+                roomUsers: action.payload
+            }
         case "start-game":
             if (!state.grid) {
                 throw new Error("No grid defined!");
@@ -74,8 +82,6 @@ function gameReducer(state: State, action: Action) {
                 turn: action.payload.turn + 1,
                 tokenMap: doMove(action.payload, state.grid, state.tokenMap)
             }
-            // TODO alter state
-            return state;
     }
 }
 

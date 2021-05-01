@@ -1,4 +1,4 @@
-import React, {FC, ReactElement} from "react";
+import {FC, ReactElement} from "react";
 import { Box } from "rebass";
 import {Players} from "../game/players";
 import { GameState } from "../types/gameState";

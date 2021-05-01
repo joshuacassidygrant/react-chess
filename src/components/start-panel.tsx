@@ -1,16 +1,12 @@
-import React, {FC, ReactElement, useEffect, useState, useContext} from "react";
+import {FC, ReactElement, useEffect, useState} from "react";
 import {Flex, Box} from "rebass";
-import { User } from "../types";
 import { chooseRole, joinRoom, requestRandomString } from "../utils";
 import { RandomButton } from "./random-button";
 import { TextInput } from "./text-input";
 import {useGameContext} from "./game-context";
 
-export type StartPanelProps = {
-    users: User[]
-}
 
-export const StartPanel: FC<StartPanelProps> = ({users}): ReactElement => {
+export const StartPanel: FC = (): ReactElement => {
     const ctx = useGameContext();
     const {socket, room, user, roomUsers} = ctx.state;
 
@@ -53,7 +49,7 @@ export const StartPanel: FC<StartPanelProps> = ({users}): ReactElement => {
         const roleString = params.get("role");
         if (roleString && user && room) {
             const role = parseInt(roleString);
-            if ([0, 1, 2].includes(role) && users.length > 0 && (role === 2 || users.filter(el => el.role === role).length === 0)) {
+            if ([0, 1, 2].includes(role) && roomUsers.length > 0 && (role === 2 || roomUsers.filter(el => el.role === role).length === 0)) {
                 chooseRole(socket, room, role);
                 ctx.dispatch({type: "set-user", payload: {name: user.name, socket: socket.id , role}});
 
@@ -62,7 +58,7 @@ export const StartPanel: FC<StartPanelProps> = ({users}): ReactElement => {
                 window.history.replaceState(null, "Chess", url.toString())
             }
         }
-    }, [users, user])
+    }, [roomUsers, user])
 
     return (
         <Flex p={2} width={600} mx="auto" my={50} bg="#499">
@@ -97,12 +93,12 @@ export const StartPanel: FC<StartPanelProps> = ({users}): ReactElement => {
             ) : (
             <Box>
                 <div>
-                    <button disabled={users.filter(el => el.role === 0).length > 0} onClick={() => {
+                    <button disabled={roomUsers.filter(el => el.role === 0).length > 0} onClick={() => {
                         if (!user || !room) return;
                         chooseRole(socket, room, 0); 
                         ctx.dispatch({type: "set-user", payload: {...user, role: 0}});
                     }}>Join as White</button>
-                    <button disabled={users.filter(el => el.role === 1).length > 0} onClick={() => {
+                    <button disabled={roomUsers.filter(el => el.role === 1).length > 0} onClick={() => {
                         if (!user || !room) return;
                         chooseRole(socket, room, 1); 
                         ctx.dispatch({type: "set-user", payload: {...user, role: 1}});
