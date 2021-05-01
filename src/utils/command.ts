@@ -14,6 +14,14 @@ const actions = new Map<string, CommandAction>([
             return `Changing name to ${name}`;
         }
     }],
+    ["leave", {
+        arg_range: [0, 0],
+        fn: (args: string[], ctx: any): string => {
+            ctx.state.socket.emit("leave-room", ctx.state.room);
+            ctx.dispatch({type: "change-room", payload: null});
+            return `Leaving room`;
+        }
+    }]
 ]);
 
 export function isLegalFunctionSyntax(cmd: string): boolean {
