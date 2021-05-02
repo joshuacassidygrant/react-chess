@@ -11,12 +11,16 @@ export class TokenData {
     pieceKey: string;
     player: number;
     isSelected: boolean;
+    hasMoved: boolean;
+
 
     constructor(pieceKey: string, player: number, coord?: Coordinate) { 
         this.pieceKey = pieceKey;
         this.player = player;
         this.coord = coord;
         this.isSelected = false;
+        this.hasMoved = false;
+        
     }
 
     getPosition(): Position {

@@ -59,5 +59,5 @@ test("start-game sets turn, state and tokenmap correctly", () => {
 
 test("move moves one piece on tokenmap and increments turn", () => {
     gameReducer(initializedState, {type: "start-game"});
-    expect(gameReducer(initializedState, {type: "move", payload:{turn: 0, from: [4, 6], to:[4,4]}})).toEqual({...initializedState, turn: 1, tokenMap: {...startState(grid), wp4: {...startState(grid).wp4, coord: {x: 4, y:4, grid}}}});
+    expect(gameReducer(initializedState, {type: "move", payload:{turn: 0, from: [4, 6], to:[4,4]}})).toEqual({...initializedState, turn: 1, tokenMap: {...startState(grid), wp4: {...startState(grid).wp4, hasMoved: true, coord: {x: 4, y:4, grid}}}});
 }) 

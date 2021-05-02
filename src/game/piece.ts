@@ -23,7 +23,7 @@ export const Pawn: Piece = {
 
         return [
                 ...(emptyCoordinate(oneFrontCoord, tokenMap)) ? [oneFrontCoord] : [],
-                ...(((token.coord.y === 6 && token.player === 0) || (token.coord.y === 1 && token.player === 1)) && emptyCoordinate(twoFrontCoord, tokenMap) && emptyCoordinate(oneFrontCoord, tokenMap)) ? [twoFrontCoord] : [],
+                ...((!token.hasMoved) && emptyCoordinate(twoFrontCoord, tokenMap) && emptyCoordinate(oneFrontCoord, tokenMap)) ? [twoFrontCoord] : [],
                 ...(pieceOfColorAtCoordinate(captureCoordLeft, getOpponent(token.player), tokenMap)) ? [captureCoordLeft] : [],
                 ...(pieceOfColorAtCoordinate(captureCoordRight, getOpponent(token.player), tokenMap)) ? [captureCoordRight] : [],
                 //TODO: en passant, promotion

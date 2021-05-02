@@ -49,7 +49,9 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap)
     if (captureToken !== undefined && captureToken[1].player === getOpponent(tokenData.player)) {
         tokenMap = removeTokenData(tokenMap, captureToken[0]);
     }
-    tokenMap = updateTokenData(tokenMap, { [token[0]]: tokenData.setCoordAndReturn({ x: move.to[0], y: move.to[1], grid }) });
+    const tokenUpdate = tokenData.setCoordAndReturn({ x: move.to[0], y: move.to[1], grid });
+    tokenUpdate.hasMoved = true;
+    tokenMap = updateTokenData(tokenMap, { [token[0]]: tokenUpdate});
 
     return tokenMap;
 }
