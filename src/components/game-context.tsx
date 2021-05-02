@@ -27,7 +27,7 @@ type GameContextProviderProps = {children: React.ReactNode}
 
 export const GameContext = createContext<{state: State; dispatch: Dispatch} | undefined>(undefined);
 
-function gameReducer(state: State, action: Action) {
+export function gameReducer(state: State, action: Action) {
     switch (action.type) {
         case "init":
             return action.payload;
@@ -63,9 +63,6 @@ function gameReducer(state: State, action: Action) {
                 roomUsers: action.payload
             }
         case "start-game":
-            if (!state.grid) {
-                throw new Error("No grid defined!");
-            }
             return {
                 ...state,
                 turn: 0,
@@ -77,6 +74,7 @@ function gameReducer(state: State, action: Action) {
             if (!state.grid) {
                 throw new Error("No grid defined!");
             }
+
             return {
                 ...state,
                 turn: action.payload.turn + 1,
