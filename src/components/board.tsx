@@ -1,7 +1,7 @@
 import React, {FC, ReactElement} from "react";
 import {Grid} from "./grid";
 import {Token} from "./token";
-import {GridData, TokenMap, Coordinate} from "../types";
+import {Coordinate} from "../types";
 import { useGameContext } from "./game-context";
 
 type BoardProps = {

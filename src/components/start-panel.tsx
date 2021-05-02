@@ -58,6 +58,7 @@ export const StartPanel: FC = (): ReactElement => {
                 window.history.replaceState(null, "Chess", url.toString())
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [roomUsers, user])
 
     return (
