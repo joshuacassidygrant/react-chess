@@ -50,7 +50,7 @@ test("set-gamestate should set gamestate only", () => {
 })
 
 test("set-tokenmap should set tokenmap only", () => {
-    expect(gameReducer(initializedState, {type: "set-tokenmap", payload: {}})).toEqual({...initializedState, currentTokenMap: {}});
+    expect(gameReducer(initializedState, {type: "set-tokenmap", payload: {}})).toEqual({...initializedState, tokenMap: {}});
 })
 
 test("set-users sets room users only", () => {
@@ -58,10 +58,10 @@ test("set-users sets room users only", () => {
 });
 
 test("start-game sets turn, state and tokenmap correctly", () => {
-    expect(gameReducer(initializedState, {type: "start-game"})).toEqual({...initializedState, turn: 0, currentGameState: GameState.NOT_STARTED, currentTokenMap: startState(grid)});
+    expect(gameReducer(initializedState, {type: "start-game"})).toEqual({...initializedState, turn: 0, currentGameState: GameState.NOT_STARTED, tokenMap: startState(grid)});
 })
 
 test("move moves one piece on tokenmap and increments turn", () => {
     gameReducer(initializedState, {type: "start-game"});
-    expect(gameReducer(initializedState, {type: "move", payload:{turn: 0, from: [4, 6], to:[4,4]}})).toEqual({...initializedState, turn: 1, currentTokenMap: {...startState(grid), wp4: {...startState(grid).wp4, coord: {x: 4, y:4, grid}}}});
+    expect(gameReducer(initializedState, {type: "move", payload:{turn: 0, from: [4, 6], to:[4,4]}})).toEqual({...initializedState, turn: 1, tokenMap: {...startState(grid), wp4: {...startState(grid).wp4, coord: {x: 4, y:4, grid}}}});
 }) 

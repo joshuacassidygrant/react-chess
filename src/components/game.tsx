@@ -1,4 +1,4 @@
-import {FC, ReactElement, useState, useEffect} from "react";
+import React, {FC, ReactElement, useState, useEffect} from "react";
 import {io} from "socket.io-client";
 
 import {Board} from "./board";
@@ -70,7 +70,7 @@ export const Game: FC = (): ReactElement => {
 
     useEffect(() => {
         ctx.dispatch({type: "set-gamestate", payload: checkGameState(currentGameState, tokenMap)});
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tokenMap])
 
     return (
@@ -121,7 +121,7 @@ export const Game: FC = (): ReactElement => {
                                     setSelectedToken(id);
                                     const token = tokenMap[id];
                                     token.isSelected = true;
-                                    setLegalCells(filterIllegalMoves(tokenMap, id, token, token.piece.getLegalMoves(id, tokenMap, grid)));
+                                    setLegalCells(filterIllegalMoves(tokenMap, id, token, token.getPiece().getLegalMoves(id, tokenMap, grid)));
                                 }
                             }
                         }/>

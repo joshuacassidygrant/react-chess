@@ -53,11 +53,10 @@ export function gameReducer(state: State, action: Action) {
             //TODO: validate
             return {
                 ...state,
-                currentTokenMap: action.payload
+                tokenMap: action.payload
             }
         case "set-users":
             //TODO: validate
-            console.log(action);
             return {
                 ...state,
                 roomUsers: action.payload
@@ -67,7 +66,7 @@ export function gameReducer(state: State, action: Action) {
                 ...state,
                 turn: 0,
                 currentGameState: GameState.NOT_STARTED,
-                currentTokenMap: startState(state.grid),
+                tokenMap: startState(state.grid),
             }
         case "move":
             //TODO: validate
