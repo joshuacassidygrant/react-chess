@@ -1,10 +1,10 @@
 import React, {FC, ReactElement, useState, useEffect} from "react";
-import { Coordinate, GridData} from "../types";
+import { Coordinate} from "../types";
 import {inLegalCells} from "../utils";
+import { useGameContext } from "./game-context";
 
 export type GridProps = {
-    gridData: GridData,
-    legalCells: Coordinate[]
+    highlightCells: Coordinate[]
 }
 
 type CellProps = {
@@ -13,27 +13,28 @@ type CellProps = {
     color: string
 }
 
-export const Grid: FC<GridProps> = React.memo(({gridData, legalCells, children}): ReactElement => {
-
+export const Grid: FC<GridProps> = React.memo(({highlightCells, children}): ReactElement => {
+    const ctx = useGameContext();
+    const {grid} = ctx.state;
     const [cellsMap, setCellsMap] = useState<CellProps[][]>([]);
 
     useEffect(() => {
         const map = [];
-        for (let x : number = 0; x < gridData.xWidthCells; x++) {
+        for (let x : number = 0; x < grid.xWidthCells; x++) {
             const row = []
-            for (let y: number = 0; y < gridData.yHeightCells; y++) {
+            for (let y: number = 0; y < grid.yHeightCells; y++) {
                 row.push({x, y, color: (x + y) % 2 === 0 ? "#D6B693" : "#966633"} as CellProps);
             }
             map[x] = row;
         }
         setCellsMap(map);
-    }, [gridData])
+    }, [grid])
 
     return (
-        <g transform={`translate(${gridData.xOffset},${gridData.yOffset})`}>
+        <g transform={`translate(${grid.xOffset},${grid.yOffset})`}>
             {
                 cellsMap.flat().map((cell: CellProps) => 
-                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * gridData.xCellWidth} y={cell.y * gridData.yCellHeight} width={gridData.xCellWidth}  height={gridData.yCellHeight} stroke="white" strokeWidth={0} fill={inLegalCells(legalCells, cell.x, cell.y) ? "red": cell.color}>
+                    <rect key={`c${cell.x}${cell.y}`} x={cell.x * grid.xCellWidth} y={cell.y * grid.yCellHeight} width={grid.xCellWidth}  height={grid.yCellHeight} stroke="white" strokeWidth={0} fill={inLegalCells(highlightCells, cell.x, cell.y) ? "red": cell.color}>
                             <animate attributeName="opacity"
                                to="0.5" begin="mouseover" dur="0.15s" fill="freeze"/>
                             <animate attributeName="stroke-width"
