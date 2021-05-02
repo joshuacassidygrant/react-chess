@@ -3,10 +3,6 @@ import { GridData, User } from "../../types";
 import { GameState } from "../../types/gameState";
 import {gameReducer} from "../game-context";
 
-test("tests run", () => {
-    expect(1).toEqual(1);
-});
-
 const preinitialState = {
     socket: null,
     grid: new GridData("initial", 1, 1, 1, 1),

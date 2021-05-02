@@ -4,7 +4,7 @@ import {io} from "socket.io-client";
 import {Board} from "./board";
 import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {coordinateInList, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -121,7 +121,7 @@ export const Game: FC = (): ReactElement => {
                                     setSelectedToken(id);
                                     const token = tokenMap[id];
                                     token.isSelected = true;
-                                    setLegalCells(filterIllegalMoves(tokenMap, id, token, token.getPiece().getLegalMoves(id, tokenMap, grid)));
+                                    setLegalCells(getLegalMoves(id, tokenMap, grid));
                                 }
                             }
                         }/>

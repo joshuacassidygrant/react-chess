@@ -89,6 +89,14 @@ export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenDat
 
 }
 
+export function getLegalMoves(tokenId: string, tokenMap: TokenMap, grid: GridData): Coordinate[] {
+    const token = tokenMap[tokenId];
+    if (!token) {
+        throw Error(`No piece with id ${tokenId}`);
+    }
+    return filterIllegalMoves(tokenMap, tokenId, token, token.getPiece().getLegalMoves(tokenId, tokenMap, grid));
+}
+
 export function checkGameState(state: GameState, tokenMap: TokenMap): GameState {
     if (state === GameState.NOT_STARTED) return GameState.PLAYING;
     const blackKingCoord = tokenMap.bk1.coord;
