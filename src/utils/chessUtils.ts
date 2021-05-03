@@ -62,16 +62,13 @@ export function roleToName(roleNumber: number): string {
     return roles[roleNumber];
 }
 
-export function checkedColors(tokenMap: TokenMap): number[] {
-    const blackKingCoord = tokenMap.bk1.coord;
-    const whiteKingCoord = tokenMap.wk1.coord;
+export function checkedColors(tokenMap: TokenMap, grid: GridData): number[] {
+    const blackKingCoord = tokenMap.bk1?.coord;
+    const whiteKingCoord = tokenMap.wk1?.coord;
 
     if (!blackKingCoord || !whiteKingCoord) {
-        console.log("Missing king.");
         return [];
     }
-
-    const grid = blackKingCoord.grid;
 
     return [
         ...Object.entries(tokenMap).some(e => e[1].player === 1 && coordinateInList(whiteKingCoord, e[1].getPiece().getLegalMoves(e[0], tokenMap, grid))) ? [0] : [],
@@ -79,15 +76,14 @@ export function checkedColors(tokenMap: TokenMap): number[] {
     ];
 }
 
-export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenData: TokenData, coords: Coordinate[]): Coordinate[] {
+export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenData: TokenData, coords: Coordinate[], grid: GridData): Coordinate[] {
     // remove any move that would put token off board
     if (tokenData.coord) {
-        const grid = tokenData.coord.grid;
         coords = coords.filter(c => grid.coordinateInGridBounds(c));
     }
     // remove any move that  would put self in check
     const testToken = new TokenData(tokenData.pieceKey, tokenData.player, tokenData.coord);
-    return coords.filter(c => !checkedColors(updateTokenData({ ...tokenMap }, { [tokenId]: testToken.setCoordAndReturn(c) })).includes(tokenData.player));
+    return coords.filter(c => !checkedColors(updateTokenData({ ...tokenMap }, { [tokenId]: testToken.setCoordAndReturn(c) }), grid).includes(tokenData.player));
 
 }
 
@@ -96,33 +92,26 @@ export function getLegalMoves(tokenId: string, tokenMap: TokenMap, grid: GridDat
     if (!token) {
         throw Error(`No piece with id ${tokenId}`);
     }
-    return filterIllegalMoves(tokenMap, tokenId, token, token.getPiece().getLegalMoves(tokenId, tokenMap, grid));
+    return filterIllegalMoves(tokenMap, tokenId, token, token.getPiece().getLegalMoves(tokenId, tokenMap, grid), grid);
 }
 
-export function checkGameState(state: GameState, tokenMap: TokenMap): GameState {
+export function checkGameState(state: GameState, tokenMap: TokenMap, grid: GridData): GameState {
     if (state === GameState.NOT_STARTED) return GameState.PLAYING;
-    const blackKingCoord = tokenMap.bk1.coord;
 
-    if (!blackKingCoord) {
-        console.log("Missing king.");
-        return GameState.ERROR;
-    }
-
-    const grid = blackKingCoord.grid;
-    if (checkedColors(tokenMap).includes(0)) {
+    if (checkedColors(tokenMap, grid).includes(0)) {
         // White is checked; check for checkmate
         if (Object.entries(tokenMap)
             .filter(e => e[1].player === 0)
-            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap, grid)).length === 0)) {
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap, grid), grid).length === 0)) {
             return GameState.BLACK_WINS;
         }
     }
 
-    if (checkedColors(tokenMap).includes(1)) {
+    if (checkedColors(tokenMap, grid).includes(1)) {
         // Black is checked; check for checkmate
         if (Object.entries(tokenMap)
             .filter(e => e[1].player === 1)
-            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap, grid)).length === 0)) {
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap, grid), grid).length === 0)) {
             return GameState.WHITE_WINS;
         }
 

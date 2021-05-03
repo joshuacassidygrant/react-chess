@@ -69,7 +69,7 @@ export const Game: FC = (): ReactElement => {
     }, [])
 
     useEffect(() => {
-        ctx.dispatch({type: "set-gamestate", payload: checkGameState(currentGameState, tokenMap)});
+        ctx.dispatch({type: "set-gamestate", payload: checkGameState(currentGameState, tokenMap, grid)});
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tokenMap])
 

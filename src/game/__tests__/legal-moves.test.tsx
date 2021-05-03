@@ -1,4 +1,4 @@
-import { coordinateSort, GridData } from "../../types";
+import { coordinateSort, GridData, TokenData, TokenMap } from "../../types";
 import {startState} from "../start";
 import {getLegalMoves} from "../../utils/chessUtils";
 
@@ -35,9 +35,82 @@ test("knight initial state moves", () => {
     expect(getLegalMoves("bn2", start, grid).sort(coordinateSort)).toEqual([{x: 5, y:2, grid}, {x: 7, y:2, grid}]);
 })
 
-test("other piece initial state moves", () => {
+test("other piece initial state moves are []", () => {
     const keys = Object.keys(start).filter(k => !(["pawn", "knight"].includes(start[k].pieceKey)));
     for (let key of keys) {
         expect(getLegalMoves(key, start, grid)).toEqual([]);
     }
 })
+
+// Contrived positive move examples
+
+
+// PAWN
+test("pawn movement: blockaded", () => {
+    const tokenMap: TokenMap = {
+        wp1: new TokenData("pawn", 0, {x:1, y:6, grid }),
+        bp1: new TokenData("pawn", 1, {x:0, y:5, grid }),
+        bp2: new TokenData("pawn", 1, {x:1, y:5, grid }),
+        bp3: new TokenData("pawn", 1, {x:2, y:5, grid }),
+    }
+
+    expect(getLegalMoves("wp1", tokenMap, grid).sort(coordinateSort)).toEqual([{x: 0, y: 5, grid}, {x:2, y:5, grid }].sort(coordinateSort));
+})
+
+test("pawn movement: post move", () => {
+    const movedPawn = new TokenData("pawn", 0, {x: 4, y: 5, grid});
+    movedPawn.hasMoved = true;
+
+    const tokenMap: TokenMap = {
+        wp1: movedPawn
+    }
+
+    expect(getLegalMoves("wp1", tokenMap, grid).sort(coordinateSort)).toEqual([{x:4, y: 4, grid}].sort(coordinateSort));
+
+});
+
+test("pawn movement: blocked start", () => {
+    const tokenMap: TokenMap = {
+        wp1: new TokenData("pawn", 0,  {x:6, y:6, grid }),
+        bp1: new TokenData("pawn", 1, {x:6, y:4, grid}),
+    }
+    expect(getLegalMoves("wp1", tokenMap, grid).sort(coordinateSort)).toEqual([{x:6, y: 5, grid}].sort(coordinateSort));
+})
+
+
+test("pawn movement: can't capture own pieces", () => {
+    const tokenMap: TokenMap = {
+        wp1: new TokenData("pawn", 0, {x:1, y:6, grid }),
+        wp2: new TokenData("pawn", 0, {x:0, y:5, grid }),
+    }
+    expect(getLegalMoves("wp1", tokenMap, grid).sort(coordinateSort)).toEqual([{x:1, y: 4, grid}, {x:1, y: 5, grid}].sort(coordinateSort));
+});
+
+
+// BISHOP
+// TODO
+
+// KNIGHT
+// TODO
+
+// ROOK
+// TODO
+
+// QUEEN
+// TODO
+
+// KING
+// TODO
+
+
+// CHECKS
+// TODO
+
+// CASTLING
+// TODO
+
+// EN PASSANT
+// TODO
+
+// PROMOTION
+// TODO
