@@ -94,7 +94,7 @@ export const Game: FC = (): ReactElement => {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
                                     const move = toMove(turn, originalCoord, hoverCell);
-                                    ctx.dispatch({type: "move", payload: move})
+                                    //ctx.dispatch({type: "move", payload: move})
                                     emitMove(socket, room, move);
 
                                 }

@@ -35,6 +35,12 @@ export function inLegalCells(legalCells: Coordinate[], x: number, y: number): bo
 export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap): TokenMap {
     const token = getTokenAtCoordinate({ x: move.from[0], y: move.from[1], grid }, tokenMap);
     if (!token) return tokenMap;
+    
+    /*const capture: [string,TokenData]|undefined = getTokenAtCoordinate({x: move.to[0], y: move.to[1], grid}, tokenMap);
+    if (capture && capture[1].player !== token[1].player) {
+
+    }*/ // TODO --broke this!
+
     const tokenData = token[1];
     const tokenUpdate = tokenData.setCoordAndReturn({ x: move.to[0], y: move.to[1], grid });
     tokenUpdate.hasMoved = true;
@@ -71,7 +77,6 @@ export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenDat
     // remove any move that  would put self in check
     const testToken = new TokenData(tokenData.pieceKey, tokenData.player, tokenData.coord);
     return coords.filter(c => !checkedColors(updateTokenData({ ...tokenMap }, { [tokenId]: testToken.setCoordAndReturn(c) }), grid).includes(tokenData.player));
-
 }
 
 export function getLegalMoves(tokenId: string, tokenMap: TokenMap, grid: GridData): Coordinate[] {
