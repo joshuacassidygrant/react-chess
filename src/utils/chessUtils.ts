@@ -28,15 +28,6 @@ export function makeJump(xDelta: number, yDelta: number, coord: Coordinate, bloc
     return !pieceOfColorAtCoordinate(newCoord, blockingPlayer, tokenMap) ? [newCoord] : [];
 }
 
-export function maybeCaptureTokenOfColorAtCoordinate(coord: Coordinate, capturePlayer: number, tokenMap: TokenMap): TokenMap {
-    const capture = Object.entries(tokenMap).find(([key, entry]) => {
-        return entry.player === capturePlayer && entry.coord && entry.coord.x === coord.x && entry.coord.y === coord.y && entry.coord.grid.id === coord.grid.id
-    });
-    if (!capture) return tokenMap;
-    delete tokenMap[capture[0]];
-    return tokenMap;
-}
-
 export function inLegalCells(legalCells: Coordinate[], x: number, y: number): boolean {
     return !!legalCells.find(c => c.x === x && c.y === y);
 }
