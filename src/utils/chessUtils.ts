@@ -45,10 +45,6 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap)
     const token = getTokenAtCoordinate({ x: move.from[0], y: move.from[1], grid }, tokenMap);
     if (!token) return tokenMap;
     const tokenData = token[1];
-    const captureToken = getTokenAtCoordinate({ x: move.to[0], y: move.to[1], grid }, tokenMap);
-    if (captureToken !== undefined && captureToken[1].player === getOpponent(tokenData.player)) {
-        tokenMap = removeTokenData(tokenMap, captureToken[0]);
-    }
     const tokenUpdate = tokenData.setCoordAndReturn({ x: move.to[0], y: move.to[1], grid });
     tokenUpdate.hasMoved = true;
     tokenMap = updateTokenData(tokenMap, { [token[0]]: tokenUpdate});
