@@ -37,6 +37,8 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap)
     const token = getTokenAtCoordinate({ x: move.from[0], y: move.from[1], grid }, tokenMap);
     if (!token) return tokenMap;
     
+
+    // Capture
     const capture: [string,TokenData]|undefined = getTokenAtCoordinate({x: move.to[0], y: move.to[1], grid}, tokenMap);
     if (capture && capture[1].player !== token[1].player) {
         delete tokenMap[capture[0]]
@@ -44,6 +46,12 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap)
 
     const tokenData = token[1];
     const tokenUpdate = tokenData.setCoordAndReturn({ x: move.to[0], y: move.to[1], grid });
+
+    // Promotion
+    if (tokenUpdate.pieceKey === "pawn" && ((tokenUpdate.player === 0 && tokenUpdate.coord?.y === 0) || (tokenUpdate.player === 1 && tokenUpdate.coord?.y === 7))) {
+        tokenUpdate.pieceKey = "queen"; // TODO -- allow promotion choice
+    }
+
     tokenUpdate.hasMoved = true;
     tokenMap = updateTokenData(tokenMap, { [token[0]]: tokenUpdate});
 
