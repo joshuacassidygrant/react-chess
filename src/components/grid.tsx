@@ -46,7 +46,7 @@ export const Grid: FC<GridProps> = React.memo(({highlightCells, children}): Reac
                                 <animate attributeName="stroke-width"
                                 to="0" begin="mouseout" dur="0.15s" fill="freeze"/>
                         </rect>
-                        <text x={cell.x * grid.xCellWidth + grid.xCellWidth/2} y={cell.y * grid.yCellHeight + grid.yCellHeight/2}>{cell.x},{cell.y}</text>
+                        {/*<text x={cell.x * grid.xCellWidth + grid.xCellWidth/2} y={cell.y * grid.yCellHeight + grid.yCellHeight/2}>{cell.x},{cell.y}</text>*/}
                     </>
                 )
             }

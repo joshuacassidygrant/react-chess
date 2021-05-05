@@ -61,6 +61,7 @@ test("check gameState returns Playing after called with not started", () => {
 
 test("white checked", () => {
     const map = startState(grid);
-    doMove(toMove(0, c(3,0), c(5,6)), grid, map);
+    doMove(toMove(0, c(5,6), c(5, 5)), grid, map);
+    doMove(toMove(1, c(3,0), c(5,6)), grid, map);
     expect(checkGameState(GameState.PLAYING, map,  grid)).toEqual(GameState.PLAYING);
 })
