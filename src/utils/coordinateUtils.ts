@@ -8,7 +8,7 @@ export function emptyCoordinate(coord: Coordinate, tokenMap: TokenMap): boolean 
     return Object.values(tokenMap).find(entry => coordinatesEqual(entry.coord, coord)) === undefined;
 }
 
-export function coordinateInList(coord: Coordinate, listCoords: Coordinate[]): boolean {
+export function coordinateInList(coord: Coordinate | undefined, listCoords: (Coordinate | undefined)[]): boolean {
     return !!listCoords.find(entry => entry && coordinatesEqual(entry, coord));
 }
 

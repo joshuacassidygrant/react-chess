@@ -1,10 +1,10 @@
-import {FC, ReactElement, useState, useEffect} from "react";
+import React, {FC, ReactElement, useState, useEffect} from "react";
 import {io} from "socket.io-client";
 
 import {Board} from "./board";
 import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {coordinateInList, toMove, emitMove, socketEndpoint, filterIllegalMoves, checkGameState} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -69,8 +69,8 @@ export const Game: FC = (): ReactElement => {
     }, [])
 
     useEffect(() => {
-        ctx.dispatch({type: "set-gamestate", payload: checkGameState(currentGameState, tokenMap)});
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        ctx.dispatch({type: "set-gamestate", payload: checkGameState(currentGameState, tokenMap, grid)});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tokenMap])
 
     return (
@@ -94,7 +94,7 @@ export const Game: FC = (): ReactElement => {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
                                     const move = toMove(turn, originalCoord, hoverCell);
-                                    ctx.dispatch({type: "move", payload: move})
+                                    //ctx.dispatch({type: "move", payload: move})
                                     emitMove(socket, room, move);
 
                                 }
@@ -121,7 +121,7 @@ export const Game: FC = (): ReactElement => {
                                     setSelectedToken(id);
                                     const token = tokenMap[id];
                                     token.isSelected = true;
-                                    setLegalCells(filterIllegalMoves(tokenMap, id, token, token.piece.getLegalMoves(id, tokenMap, grid)));
+                                    setLegalCells(getLegalMoves(id, tokenMap, grid));
                                 }
                             }
                         }/>

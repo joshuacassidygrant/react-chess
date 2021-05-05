@@ -13,11 +13,11 @@ const MaterialLine: FC<MaterialLineProps> = ({player}) : ReactElement => {
     const ctx = useGameContext();
     const {tokenMap, grid,} = ctx.state;
     const start = startState(grid);
-    const materialValue = Object.values(tokenMap).filter(v => v.player === player).map(v => v.piece.pointValue).reduce((tot, num) => {return tot + num}, 0)
+    const materialValue = Object.values(tokenMap).filter(v => v.player === player).map(v => v.getPiece().pointValue).reduce((tot, num) => {return tot + num}, 0)
     // TODO: account for promotion
     return (<> ({materialValue})
         {Object.keys(start).filter(k => start[k].player === player).map(k => 
-             <span key={k} style={{color: k in tokenMap ? "inherit" : "red"}}>{start[k].piece.symbol}</span>
+             <span key={k} style={{color: k in tokenMap ? "inherit" : "red"}}>{start[k].getPiece().symbol}</span>
         )}
     </>)
 }

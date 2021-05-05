@@ -1,5 +1,5 @@
 import {Coordinate, Position} from "./index";
-import {Piece} from "../game/piece";
+import {Piece, PieceMap} from "../game/piece";
 
 export interface TokenMap {
     [id: string]: TokenData
@@ -8,15 +8,19 @@ export interface TokenMap {
 export class TokenData {
     coord?: Coordinate;
     pos?: Position;
-    piece: Piece;
+    pieceKey: string;
     player: number;
     isSelected: boolean;
+    hasMoved: boolean;
 
-    constructor(piece: Piece, player: number, coord?: Coordinate) { 
-        this.piece = piece;
+
+    constructor(pieceKey: string, player: number, coord?: Coordinate) { 
+        this.pieceKey = pieceKey;
         this.player = player;
         this.coord = coord;
         this.isSelected = false;
+        this.hasMoved = false;
+        
     }
 
     getPosition(): Position {
@@ -36,6 +40,14 @@ export class TokenData {
         this.pos = undefined;
         this.coord =  coord;
         return this;
+    }
+
+    getPiece() : Piece {
+        const piece = PieceMap.get(this.pieceKey);
+        if (!piece) {
+            throw new Error(`No piece for key ${this.pieceKey}`);
+        }
+        return piece;
     }
 }
 
