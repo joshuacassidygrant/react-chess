@@ -73,8 +73,8 @@ export function checkedColors(tokenMap: TokenMap, grid: GridData): number[] {
     }
 
     return [
-        ...Object.entries(tokenMap).some(e => e[1].player === 1 && coordinateInList(whiteKingCoord, e[1].getPiece().getLegalMoves(e[0], tokenMap, grid))) ? [0] : [],
-        ...Object.entries(tokenMap).some(e => e[1].player === 0 && coordinateInList(blackKingCoord, e[1].getPiece().getLegalMoves(e[0], tokenMap, grid))) ? [1] : [],
+        ...Object.entries(tokenMap).some(e => e[1].player === 1 && coordinateInList(whiteKingCoord, e[1].getPiece().getLegalMoves(e[0], tokenMap))) ? [0] : [],
+        ...Object.entries(tokenMap).some(e => e[1].player === 0 && coordinateInList(blackKingCoord, e[1].getPiece().getLegalMoves(e[0], tokenMap))) ? [1] : [],
     ];
 }
 
@@ -93,7 +93,8 @@ export function getLegalMoves(tokenId: string, tokenMap: TokenMap, grid: GridDat
     if (!token) {
         throw Error(`No piece with id ${tokenId}`);
     }
-    return filterIllegalMoves(tokenMap, tokenId, token, token.getPiece().getLegalMoves(tokenId, tokenMap, grid), grid);
+    return filterIllegalMoves(tokenMap, tokenId, token, [...token.getPiece().getLegalMoves(tokenId, tokenMap), ...token.getPiece().getSpecialMoves(tokenId, tokenMap).map(m => m[0])
+    ], grid);
 }
 
 export function checkGameState(state: GameState, tokenMap: TokenMap, grid: GridData): GameState {
@@ -103,7 +104,7 @@ export function checkGameState(state: GameState, tokenMap: TokenMap, grid: GridD
         // White is checked; check for checkmate
         if (Object.entries(tokenMap)
             .filter(e => e[1].player === 0)
-            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap, grid), grid).length === 0)) {
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap), grid).length === 0)) {
             return GameState.BLACK_WINS;
         }
     }
@@ -112,7 +113,7 @@ export function checkGameState(state: GameState, tokenMap: TokenMap, grid: GridD
         // Black is checked; check for checkmate
         if (Object.entries(tokenMap)
             .filter(e => e[1].player === 1)
-            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap, grid), grid).length === 0)) {
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap), grid).length === 0)) {
             return GameState.WHITE_WINS;
         }
 
