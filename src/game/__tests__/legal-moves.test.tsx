@@ -193,7 +193,51 @@ test("checkmate: fools gambit", () => {
 })
 
 // CASTLING
-// TODO
+test("castling: white queenside", () => {
+
+    const tokenMap: TokenMap = startState(grid);
+    delete tokenMap.wn1;
+    delete tokenMap.wb1;
+    delete tokenMap.wq1;
+    
+    expectLegalMoves("wk1", tokenMap, grid, [c(7,3), c(7,2)]);
+
+})
+
+
+test("castling: white kingside", () => {
+
+    const tokenMap: TokenMap = startState(grid);
+    delete tokenMap.wn2;
+    delete tokenMap.wb2;
+    
+    expectLegalMoves("wk1", tokenMap, grid, [c(7,5), c(7,6)]);
+
+})
+
+
+
+test("castling: black queenside", () => {
+
+    const tokenMap: TokenMap = startState(grid);
+    delete tokenMap.bn1;
+    delete tokenMap.bb1;
+    delete tokenMap.bq1;
+    
+    expectLegalMoves("bk1", tokenMap, grid, [c(0,3), c(0,2)]);
+
+})
+
+
+test("castling: black kingside", () => {
+
+    const tokenMap: TokenMap = startState(grid);
+    delete tokenMap.bn2;
+    delete tokenMap.bb2;
+    
+    expectLegalMoves("bk1", tokenMap, grid, [c(0,5), c(0,6)]);
+
+})
 
 // EN PASSANT
 // TODO
