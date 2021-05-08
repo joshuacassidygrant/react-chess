@@ -4,7 +4,7 @@ import {io} from "socket.io-client";
 import {Board} from "./board";
 import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -93,9 +93,12 @@ export const Game: FC = (): ReactElement => {
                                 } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
-                                    const move = toMove(turn, originalCoord, hoverCell);
-                                    emitMove(socket, room, move);
-
+                                    const specialMove =  tokenData.getPiece().getSpecialMoves(selectedToken, tokenMap).find(entry => coordinatesEqual(entry[0], hoverCell));
+                                    if (specialMove) {
+                                        specialMove[1].map(mv => emitMove(socket, room, toMove(turn, mv[0], mv[1])));
+                                    } else {
+                                        emitMove(socket, room, toMove(turn, originalCoord, hoverCell));
+                                    }
                                 }
                                 tokenMap[selectedToken].isSelected = false;
                                 setSelectedToken("");

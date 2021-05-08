@@ -27,10 +27,10 @@ export function getTokenAtCoordinate(coord: Coordinate, tokenMap: TokenMap): [st
     });
 }
 
-export function toMove(turn: number, from: Coordinate, to: Coordinate): CoordinateMove {
+export function toMove(turn: number, from: Coordinate, to: Coordinate | null): CoordinateMove {
     return {
         turn,
         from: [from.x, from.y],
-        to: [to.x, to.y]
+        to: to ? [to.x, to.y] : null
     }
 }

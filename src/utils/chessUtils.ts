@@ -37,6 +37,10 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap)
     const token = getTokenAtCoordinate({ x: move.from[0], y: move.from[1], grid }, tokenMap);
     if (!token) return tokenMap;
     
+    if (!move.to) {
+        delete tokenMap[token[0]]
+        return tokenMap;
+    }
 
     // Capture
     const capture: [string,TokenData]|undefined = getTokenAtCoordinate({x: move.to[0], y: move.to[1], grid}, tokenMap);
@@ -45,6 +49,7 @@ export function doMove(move: CoordinateMove, grid: GridData, tokenMap: TokenMap)
     }
 
     const tokenData = token[1];
+
     const tokenUpdate = tokenData.setCoordAndReturn({ x: move.to[0], y: move.to[1], grid });
 
     // Promotion
@@ -79,7 +84,7 @@ export function checkedColors(tokenMap: TokenMap): number[] {
 }
 
 export function tileUnderThreatOrOccupied(tokenMap: TokenMap, coord: Coordinate, threatenedPlayer: number): boolean {
-    return emptyCoordinate(coord, tokenMap) || Object.entries(tokenMap).some(e => e[1].player !== threatenedPlayer && coordinateInList(coord, e[1].getPiece().getLegalMoves(e[0], tokenMap)))
+    return !emptyCoordinate(coord, tokenMap) || Object.entries(tokenMap).some(e => e[1].player !== threatenedPlayer && coordinateInList(coord, e[1].getPiece().getLegalMoves(e[0], tokenMap)))
 }
 
 export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenData: TokenData, coords: Coordinate[]): Coordinate[] {
@@ -113,7 +118,7 @@ export function generateCastlingMoves(tokenId: string, tokenMap: TokenMap): [Coo
     const moves:[Coordinate, [Coordinate, Coordinate][]][] = [];
 
     // Choose player
-    if (token.player === 0) {
+    if (token.player === 0) { 
         // Choose a rook
         if ("wr1" in tokenMap && !tokenMap.wr1.hasMoved 
             && !tileUnderThreatOrOccupied(tokenMap, crd(2, 7, grid), 0)
@@ -128,7 +133,7 @@ export function generateCastlingMoves(tokenId: string, tokenMap: TokenMap): [Coo
             && !tileUnderThreatOrOccupied(tokenMap, crd(5, 7, grid), 0)
             && !tileUnderThreatOrOccupied(tokenMap, crd(6, 7, grid), 0))
             {
-                moves.push([crd(5,7, grid), [[crd(4, 7, grid), crd(6,7, grid)], [crd(7,7,grid), crd(5,7, grid)]]])
+                moves.push([crd(6,7, grid), [[crd(4, 7, grid), crd(6,7, grid)], [crd(7,7,grid), crd(5,7, grid)]]])
         }
         
     } else if (token.player === 1) {
@@ -143,10 +148,10 @@ export function generateCastlingMoves(tokenId: string, tokenMap: TokenMap): [Coo
 
         if ("br2" in tokenMap) {
             if (!tokenMap.br2.hasMoved
-            && !tileUnderThreatOrOccupied(tokenMap, crd(2, 0, grid), 1) 
-            && !tileUnderThreatOrOccupied(tokenMap, crd(3, 0, grid), 1))
+            && !tileUnderThreatOrOccupied(tokenMap, crd(5, 0, grid), 1) 
+            && !tileUnderThreatOrOccupied(tokenMap, crd(6, 0, grid), 1))
             {
-                moves.push([crd(3,0, grid), [[crd(0, 0, grid), crd(3,0, grid)], [crd(4,0,grid), crd(2,0, grid)]]])
+                moves.push([crd(6,0, grid), [[crd(4, 0, grid), crd(6,0, grid)], [crd(7,0,grid), crd(5,0, grid)]]])
             }
         }
 

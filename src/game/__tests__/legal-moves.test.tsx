@@ -200,7 +200,7 @@ test("castling: white queenside", () => {
     delete tokenMap.wb1;
     delete tokenMap.wq1;
     
-    expectLegalMoves("wk1", tokenMap, grid, [c(7,3), c(7,2)]);
+    expectLegalMoves("wk1", tokenMap, grid, [c(3,7), c(2,7)]);
 
 })
 
@@ -211,7 +211,7 @@ test("castling: white kingside", () => {
     delete tokenMap.wn2;
     delete tokenMap.wb2;
     
-    expectLegalMoves("wk1", tokenMap, grid, [c(7,5), c(7,6)]);
+    expectLegalMoves("wk1", tokenMap, grid, [c(5,7), c(6,7)]);
 
 })
 
@@ -224,7 +224,7 @@ test("castling: black queenside", () => {
     delete tokenMap.bb1;
     delete tokenMap.bq1;
     
-    expectLegalMoves("bk1", tokenMap, grid, [c(0,3), c(0,2)]);
+    expectLegalMoves("bk1", tokenMap, grid, [c(3,0), c(2,0)]);
 
 })
 
@@ -235,7 +235,7 @@ test("castling: black kingside", () => {
     delete tokenMap.bn2;
     delete tokenMap.bb2;
     
-    expectLegalMoves("bk1", tokenMap, grid, [c(0,5), c(0,6)]);
+    expectLegalMoves("bk1", tokenMap, grid, [c(5,0), c(6,0)]);
 
 })
 
