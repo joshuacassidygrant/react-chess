@@ -1,6 +1,6 @@
 import { TokenData, TokenMap, Coordinate, CoordinateMove, GridData } from "../types";
 import { GameState } from "../types/gameState";
-import { emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, updateTokenData, coordinateInList } from "./index";
+import { crd, emptyCoordinate, pieceOfColorAtCoordinate, getTokenAtCoordinate, updateTokenData, coordinateInList } from "./index";
 import { forecastTokenData } from "./tokenMapUtils";
 
 export function getOpponent(player: number) {
@@ -64,7 +64,7 @@ export function roleToName(roleNumber: number): string {
     return roles[roleNumber];
 }
 
-export function checkedColors(tokenMap: TokenMap, grid: GridData): number[] {
+export function checkedColors(tokenMap: TokenMap): number[] {
     const blackKingCoord = tokenMap.bk1?.coord;
     const whiteKingCoord = tokenMap.wk1?.coord;
 
@@ -78,14 +78,20 @@ export function checkedColors(tokenMap: TokenMap, grid: GridData): number[] {
     ];
 }
 
-export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenData: TokenData, coords: Coordinate[], grid: GridData): Coordinate[] {
+export function tileUnderThreatOrOccupied(tokenMap: TokenMap, coord: Coordinate, threatenedPlayer: number): boolean {
+    return emptyCoordinate(coord, tokenMap) || Object.entries(tokenMap).some(e => e[1].player !== threatenedPlayer && coordinateInList(coord, e[1].getPiece().getLegalMoves(e[0], tokenMap)))
+}
+
+export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenData: TokenData, coords: Coordinate[]): Coordinate[] {
     // remove any move that would put token off board
-    if (tokenData.coord) {
-        coords = coords.filter(c => grid.coordinateInGridBounds(c));
-    }
+    if (!tokenData.coord) return [];
+    const grid = tokenData.coord?.grid;
+
+    coords = coords.filter(c => grid.coordinateInGridBounds(c));
+    
     // remove any move that  would put self in check
     const testToken = new TokenData(tokenData.pieceKey, tokenData.player, tokenData.coord);
-    return coords.filter(c => !checkedColors(forecastTokenData({ ...tokenMap }, { [tokenId]: testToken.setCoordAndReturn(c) }), grid).includes(tokenData.player));
+    return coords.filter(c => !checkedColors(forecastTokenData({ ...tokenMap }, { [tokenId]: testToken.setCoordAndReturn(c) })).includes(tokenData.player));
 }
 
 export function getLegalMoves(tokenId: string, tokenMap: TokenMap, grid: GridData): Coordinate[] {
@@ -94,26 +100,78 @@ export function getLegalMoves(tokenId: string, tokenMap: TokenMap, grid: GridDat
         throw Error(`No piece with id ${tokenId}`);
     }
     return filterIllegalMoves(tokenMap, tokenId, token, [...token.getPiece().getLegalMoves(tokenId, tokenMap), ...token.getPiece().getSpecialMoves(tokenId, tokenMap).map(m => m[0])
-    ], grid);
+    ]);
+}
+
+export function generateCastlingMoves(tokenId: string, tokenMap: TokenMap): [Coordinate, [Coordinate, Coordinate][]][] {
+    const token = tokenMap[tokenId];
+    if (!token.coord || token.pieceKey !== "king") return [];
+    const grid = token.coord.grid;
+
+    // Check if checked or moved
+    if (token.hasMoved || checkedColors(tokenMap).includes(token.player)) return []
+    const moves:[Coordinate, [Coordinate, Coordinate][]][] = [];
+
+    // Choose player
+    if (token.player === 0) {
+        // Choose a rook
+        if ("wr1" in tokenMap && !tokenMap.wr1.hasMoved 
+            && !tileUnderThreatOrOccupied(tokenMap, crd(2, 7, grid), 0)
+            && !tileUnderThreatOrOccupied(tokenMap, crd(3, 7, grid), 0))
+            {
+                moves.push([crd(2,7, grid), [[crd(0, 7, grid), crd(3,7, grid)], [crd(4,7,grid), crd(2,7, grid)]]])
+            }
+        
+
+        if ("wr2" in tokenMap && !tokenMap.wr2.hasMoved
+            // Check if passing and king ending squares threatened TODO
+            && !tileUnderThreatOrOccupied(tokenMap, crd(5, 7, grid), 0)
+            && !tileUnderThreatOrOccupied(tokenMap, crd(6, 7, grid), 0))
+            {
+                moves.push([crd(5,7, grid), [[crd(4, 7, grid), crd(6,7, grid)], [crd(7,7,grid), crd(5,7, grid)]]])
+        }
+        
+    } else if (token.player === 1) {
+        if ("br1" in tokenMap) {
+            if (!tokenMap.br1.hasMoved
+            && !tileUnderThreatOrOccupied(tokenMap, crd(2, 0, grid), 1) 
+            && !tileUnderThreatOrOccupied(tokenMap, crd(3, 0, grid), 1))
+            {
+                moves.push([crd(2,0, grid), [[crd(0, 0, grid), crd(3,0, grid)], [crd(4,0,grid), crd(2,0, grid)]]])
+            }
+        }
+
+        if ("br2" in tokenMap) {
+            if (!tokenMap.br2.hasMoved
+            && !tileUnderThreatOrOccupied(tokenMap, crd(2, 0, grid), 1) 
+            && !tileUnderThreatOrOccupied(tokenMap, crd(3, 0, grid), 1))
+            {
+                moves.push([crd(3,0, grid), [[crd(0, 0, grid), crd(3,0, grid)], [crd(4,0,grid), crd(2,0, grid)]]])
+            }
+        }
+
+    }
+
+    return moves;
 }
 
 export function checkGameState(state: GameState, tokenMap: TokenMap, grid: GridData): GameState {
     if (state === GameState.NOT_STARTED) return GameState.PLAYING;
 
-    if (checkedColors(tokenMap, grid).includes(0)) {
+    if (checkedColors(tokenMap).includes(0)) {
         // White is checked; check for checkmate
         if (Object.entries(tokenMap)
             .filter(e => e[1].player === 0)
-            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap), grid).length === 0)) {
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap)).length === 0)) {
             return GameState.BLACK_WINS;
         }
     }
 
-    if (checkedColors(tokenMap, grid).includes(1)) {
+    if (checkedColors(tokenMap).includes(1)) {
         // Black is checked; check for checkmate
         if (Object.entries(tokenMap)
             .filter(e => e[1].player === 1)
-            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap), grid).length === 0)) {
+            .every(e => filterIllegalMoves(tokenMap, e[0], e[1], e[1].getPiece().getLegalMoves(e[0], tokenMap)).length === 0)) {
             return GameState.WHITE_WINS;
         }
 

@@ -1,4 +1,8 @@
-import {Coordinate, TokenMap, TokenData, CoordinateMove} from "../types";
+import {Coordinate, TokenMap, TokenData, CoordinateMove, GridData} from "../types";
+
+export function crd(x: number, y:number, grid: GridData): Coordinate {
+    return {x, y, grid};
+}
 
 export function pieceOfColorAtCoordinate(coord: Coordinate, player: number, tokenMap: TokenMap): boolean {
     return Object.values(tokenMap).find(entry => entry.player === player && coordinatesEqual(entry.coord, coord)) !== undefined;
