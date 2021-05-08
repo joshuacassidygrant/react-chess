@@ -93,7 +93,7 @@ export const Game: FC = (): ReactElement => {
                                 } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
-                                    const specialMove =  tokenData.getPiece().getSpecialMoves(selectedToken, tokenMap).find(entry => coordinatesEqual(entry[0], hoverCell));
+                                    const specialMove =  tokenData.getPiece().getSpecialMoves(selectedToken, tokenMap, history).find(entry => coordinatesEqual(entry[0], hoverCell));
                                     if (specialMove) {
                                         specialMove[1].map(mv => emitMove(socket, room, toMove(turn, mv[0], mv[1])));
                                     } else {
@@ -123,7 +123,7 @@ export const Game: FC = (): ReactElement => {
                                     setSelectedToken(id);
                                     const token = tokenMap[id];
                                     token.isSelected = true;
-                                    setLegalCells(getLegalMoves(id, tokenMap, grid));
+                                    setLegalCells(getLegalMoves(id, tokenMap, grid, history));
                                 }
                             }
                         }/>
