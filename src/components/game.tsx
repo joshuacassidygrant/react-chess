@@ -22,14 +22,13 @@ const width:number = 600;
 
 export const Game: FC = (): ReactElement => {
     const ctx = useGameContext();
-    const {room, user, grid, socket, currentGameState, tokenMap, turn} = ctx.state;
+    const {room, user, grid, socket, currentGameState, tokenMap, turn, history} = ctx.state;
 
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
-
 
     useEffect(() => {
         // First load initialization
@@ -44,7 +43,8 @@ export const Game: FC = (): ReactElement => {
             room: null,
             currentGameState: GameState.NOT_STARTED,
             tokenMap: startState(grid),
-            roomUsers: []
+            roomUsers: [],
+            history:new Map()
         }});
 
         ctx.dispatch({type: "start-game"});

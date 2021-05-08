@@ -21,7 +21,8 @@ export type State = {
     turn: number,
     currentGameState: GameState,
     tokenMap: TokenMap,
-    roomUsers: User[]
+    roomUsers: User[],
+    history: Map<number, CoordinateMove[]>
 }
 type GameContextProviderProps = {children: React.ReactNode}
 
@@ -73,11 +74,20 @@ export function gameReducer(state: State, action: Action) {
             if (!state.grid) {
                 throw new Error("No grid defined!");
             }
+            const newHistory = new Map(state.history);
 
+
+            const turnHistory = newHistory.get(action.payload.turn)
+            if (turnHistory) {
+                newHistory.set(action.payload.turn, [...turnHistory, action.payload]);
+            } else {
+                newHistory.set(action.payload.turn, [action.payload]);
+            }
             return {
                 ...state,
                 turn: action.payload.turn + 1,
-                tokenMap: doMove(action.payload, state.grid, state.tokenMap)
+                tokenMap: doMove(action.payload, state.grid, state.tokenMap),
+                history: newHistory
             }
     }
 }
@@ -91,7 +101,8 @@ export function GameContextProvider({children}: GameContextProviderProps) {
         turn: -1,
         currentGameState: GameState.NOT_STARTED,
         tokenMap: {},
-        roomUsers: []
+        roomUsers: [],
+        history: new Map(),
     });
     const value = {state, dispatch}
     return <GameContext.Provider value={value}>{children}</GameContext.Provider>
