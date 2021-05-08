@@ -4,7 +4,7 @@ import {io} from "socket.io-client";
 import {Board} from "./board";
 import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -22,14 +22,13 @@ const width:number = 600;
 
 export const Game: FC = (): ReactElement => {
     const ctx = useGameContext();
-    const {room, user, grid, socket, currentGameState, tokenMap, turn} = ctx.state;
+    const {room, user, grid, socket, currentGameState, tokenMap, turn, history} = ctx.state;
 
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
     const [hoverCell, setHoverCell] = useState<Coordinate>({
         x:0, y:0, grid
     });
-
 
     useEffect(() => {
         // First load initialization
@@ -44,7 +43,8 @@ export const Game: FC = (): ReactElement => {
             room: null,
             currentGameState: GameState.NOT_STARTED,
             tokenMap: startState(grid),
-            roomUsers: []
+            roomUsers: [],
+            history:new Map()
         }});
 
         ctx.dispatch({type: "start-game"});
@@ -93,10 +93,12 @@ export const Game: FC = (): ReactElement => {
                                 } else if (hoverCell != null && coordinateInList(hoverCell, legalCells)) {
                                     const originalCoord = tokenData.coord;
                                     if (!originalCoord) return;
-                                    const move = toMove(turn, originalCoord, hoverCell);
-                                    //ctx.dispatch({type: "move", payload: move})
-                                    emitMove(socket, room, move);
-
+                                    const specialMove =  tokenData.getPiece().getSpecialMoves(selectedToken, tokenMap, history).find(entry => coordinatesEqual(entry[0], hoverCell));
+                                    if (specialMove) {
+                                        specialMove[1].map(mv => emitMove(socket, room, toMove(turn, mv[0], mv[1])));
+                                    } else {
+                                        emitMove(socket, room, toMove(turn, originalCoord, hoverCell));
+                                    }
                                 }
                                 tokenMap[selectedToken].isSelected = false;
                                 setSelectedToken("");
@@ -121,7 +123,7 @@ export const Game: FC = (): ReactElement => {
                                     setSelectedToken(id);
                                     const token = tokenMap[id];
                                     token.isSelected = true;
-                                    setLegalCells(getLegalMoves(id, tokenMap, grid));
+                                    setLegalCells(getLegalMoves(id, tokenMap, grid, history));
                                 }
                             }
                         }/>

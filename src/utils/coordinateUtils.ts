@@ -1,4 +1,8 @@
-import {Coordinate, TokenMap, TokenData, CoordinateMove} from "../types";
+import {Coordinate, TokenMap, TokenData, CoordinateMove, GridData} from "../types";
+
+export function crd(x: number, y:number, grid: GridData): Coordinate {
+    return {x, y, grid};
+}
 
 export function pieceOfColorAtCoordinate(coord: Coordinate, player: number, tokenMap: TokenMap): boolean {
     return Object.values(tokenMap).find(entry => entry.player === player && coordinatesEqual(entry.coord, coord)) !== undefined;
@@ -23,10 +27,10 @@ export function getTokenAtCoordinate(coord: Coordinate, tokenMap: TokenMap): [st
     });
 }
 
-export function toMove(turn: number, from: Coordinate, to: Coordinate): CoordinateMove {
+export function toMove(turn: number, from: Coordinate, to: Coordinate | null): CoordinateMove {
     return {
         turn,
         from: [from.x, from.y],
-        to: [to.x, to.y]
+        to: to ? [to.x, to.y] : null
     }
 }

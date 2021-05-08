@@ -11,7 +11,8 @@ const preinitialState = {
     turn: -1,
     currentGameState: GameState.NOT_STARTED,
     tokenMap: {},
-    roomUsers: []
+    roomUsers: [],
+    history: new Map()
 };
 const grid = new GridData("testGrid", 2, 2, 2, 2);
 
@@ -23,7 +24,8 @@ const initializedState ={
     room: null,
     currentGameState: GameState.NOT_STARTED,
     tokenMap: startState(grid),
-    roomUsers: []
+    roomUsers: [],
+    history: new Map()
 }
 
 const user: User = {socket: "test", name: "Felipe Testorossa", role:-1}
@@ -59,5 +61,8 @@ test("start-game sets turn, state and tokenmap correctly", () => {
 
 test("move moves one piece on tokenmap and increments turn", () => {
     gameReducer(initializedState, {type: "start-game"});
-    expect(gameReducer(initializedState, {type: "move", payload:{turn: 0, from: [4, 6], to:[4,4]}})).toEqual({...initializedState, turn: 1, tokenMap: {...startState(grid), wp4: {...startState(grid).wp4, hasMoved: true, coord: {x: 4, y:4, grid}}}});
+    const move = {turn: 0, from:[4, 6], to:[4,4]};
+    const history = new Map();
+    history.set(0, [move]);
+    expect(gameReducer(initializedState, {type: "move", payload:move})).toEqual({...initializedState, turn: 1, history, tokenMap: {...startState(grid), wp4: {...startState(grid).wp4, hasMoved: true, coord: {x: 4, y:4, grid}}}});
 }) 
