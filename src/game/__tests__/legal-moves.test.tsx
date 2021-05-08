@@ -240,7 +240,21 @@ test("castling: black kingside", () => {
 })
 
 // EN PASSANT
-// TODO
+test ("en passant white pawn", () => {
+    const tokenMap: TokenMap = startState(grid);
+    doMove(toMove(0, c(2,6), c(2,3)), grid, tokenMap);
+    doMove(toMove(1, c(3,1), c(3,3)), grid, tokenMap);
+
+    expectLegalMoves("wp2", tokenMap, grid, [c(2,2), c(3,2)]);
+})
+
+test ("en passant black pawn", () => {
+    const tokenMap: TokenMap = startState(grid);
+    doMove(toMove(1, c(3,1), c(3,4)), grid, tokenMap);
+    doMove(toMove(0, c(2,6), c(2,4)), grid, tokenMap);
+
+    expectLegalMoves("bp3", tokenMap, grid, [c(3,5), c(2,5)]);
+})
 
 // PROMOTION
 // TODO
