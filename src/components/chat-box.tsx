@@ -66,10 +66,10 @@ export const ChatBox : FC = (): ReactElement => {
                             setCurrentInput("");
                             if (isLegalFunctionSyntax(currentInput)) {
                                 const output = execute(currentInput, ctx);
-                                setMessages(messages => [...messages, {message: output, username: user ? user.name : "Unknown:"}])
+                                setMessages(messages => [...messages, {message: output, username: user ? user.data.name : "Unknown:"}])
                             } else {
                                 if (!room) return;
-                                sendChat(socket, room, user ? user.name : "Unknown", currentInput);
+                                sendChat(socket, room, user ? user.data.name : "Unknown", currentInput);
                             }
                         }}/>
                     </form>

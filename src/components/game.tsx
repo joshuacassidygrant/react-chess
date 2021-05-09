@@ -4,7 +4,7 @@ import {io} from "socket.io-client";
 import {Board} from "./board";
 import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual, requestUserReconnect, requestRoomHistory, requestRoomData} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -49,20 +49,34 @@ export const Game: FC = (): ReactElement => {
 
         ctx.dispatch({type: "start-game"});
 
-        if (sessionStorage.getItem("rc-user") && sessionStorage.getItem("rc-room"))  {
-            ctx.dispatch({type: "change-room", payload: sessionStorage.getItem("rc-room")})
-            const userString = sessionStorage.getItem("rc-user");
-            if (userString) {
-                const user = JSON.parse(userString);
-                ctx.dispatch({type: "set-user", payload: {...user, socket: socket.id,}});
-            }
+        const uString = sessionStorage.getItem("rc-user");
+        const storedUser: {name: string, id: string} | null = uString ?  JSON.parse(uString) : null;
+        if (storedUser) {
+            requestUserReconnect(storedUser.id).then(res => {
+                return res.json();
+            }).then( res => {
+                const uid = res.id;
+                if (uid) {
+                    const user = JSON.parse(res);
+                    ctx.dispatch({type: "set-user", payload: {...user, socket: socket.id,}});
+                }
+                const roomName = sessionStorage.getItem("rc-room");
+                if (roomName)  {
+                    return requestRoomData(roomName);
+                }
+            }).then(res => {
+                return res.json();
+            }).then(res => {
+                ctx.dispatch({type: "change-room", payload: res})
+            })
         }
-        
+
         socket.on("approved-move", function(move: CoordinateMove) {
             ctx.dispatch({type: "move", payload: move})
         });
         
         socket.on("users-changed", function(users: any) {
+            console.log(users);
             ctx.dispatch({type: "set-users", payload: Object.values(users)});
         });
 
@@ -72,7 +86,7 @@ export const Game: FC = (): ReactElement => {
 
         return () => {
             // clean up goes here
-            socket.emit("leave-room", room);
+            socket.emit("leave-room", {uid: user?.id, room});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -81,7 +95,7 @@ export const Game: FC = (): ReactElement => {
         ctx.dispatch({type: "set-gamestate", payload: checkGameState(currentGameState, tokenMap, grid)});
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tokenMap])
-    
+
     return (
         <div>
             {!room || !user || user.role === -1 ? (<StartPanel />) :
@@ -142,7 +156,7 @@ export const Game: FC = (): ReactElement => {
                         <ChatBox />
                         <UserList />
                         <button onClick={() => {
-                            socket.emit("leave-room", room);
+                            socket.emit("leave-room", {uid: user.id, room});
                             ctx.dispatch({type: "change-room", payload: null});
                         }}>Leave Room</button>
                     </Box>

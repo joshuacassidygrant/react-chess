@@ -21,7 +21,7 @@ export const UserList: FC =  () => {
             <ul>
             {roomUsers.map(user => {
                 return (
-                    <li key={user.socket}>{user.name} ({roleToName(user.role)})</li>
+                    <li key={user.id}>{user.data.name} ({roleToName(user.role)})</li>
                 )
             })}
             </ul>
