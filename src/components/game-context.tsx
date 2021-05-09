@@ -2,7 +2,7 @@ import React, { createContext, useReducer, useContext} from "react";
 import { startState } from "../game/start";
 import { CoordinateMove, GridData, TokenMap, User } from "../types";
 import { GameState } from "../types/gameState";
-import { doMove } from "../utils";
+import { applyHistory, checkGameState, doMove } from "../utils";
 
 type Action = {type: "init", payload: State} | 
             {type: "change-room", payload: string | null} |
@@ -11,7 +11,8 @@ type Action = {type: "init", payload: State} |
             {type: "set-tokenmap", payload: TokenMap} |
             {type: "start-game"} |
             {type: "set-users", payload: User[]} |
-            {type: "move", payload: CoordinateMove};
+            {type: "move", payload: CoordinateMove} |
+            {type: "consume-history", payload: CoordinateMove[]};
 type Dispatch = (action: Action) => void;
 export type State = {
     socket: any | null,
@@ -22,7 +23,7 @@ export type State = {
     currentGameState: GameState,
     tokenMap: TokenMap,
     roomUsers: User[],
-    history: Map<number, CoordinateMove[]>
+    history: CoordinateMove[]
 }
 type GameContextProviderProps = {children: React.ReactNode}
 
@@ -37,6 +38,18 @@ export function gameReducer(state: State, action: Action) {
             return {
                 ...state,
                 room: action.payload
+            }
+        case "consume-history":
+            const history = action.payload;
+            const tokenMap = applyHistory(startState(state.grid), history, state.grid);
+            const currentGameState = history.length === 0 ? GameState.NOT_STARTED : checkGameState(GameState.PLAYING, tokenMap, state.grid);
+            const turn = history.length === 0 ? 0 : history[history.length - 1].turn + 1;
+            return {
+                ...state,
+                history,
+                tokenMap,
+                currentGameState,
+                turn
             }
         case "set-user":
             // TODO: validate user
@@ -71,23 +84,13 @@ export function gameReducer(state: State, action: Action) {
             }
         case "move":
             //TODO: validate
-            if (!state.grid) {
-                throw new Error("No grid defined!");
-            }
-            const newHistory = new Map(state.history);
 
-
-            const turnHistory = newHistory.get(action.payload.turn)
-            if (turnHistory) {
-                newHistory.set(action.payload.turn, [...turnHistory, action.payload]);
-            } else {
-                newHistory.set(action.payload.turn, [action.payload]);
-            }
             return {
                 ...state,
                 turn: action.payload.turn + 1,
                 tokenMap: doMove(action.payload, state.grid, state.tokenMap),
-                history: newHistory
+                history:  [...state.history, action.payload]
+
             }
     }
 }
@@ -102,7 +105,7 @@ export function GameContextProvider({children}: GameContextProviderProps) {
         currentGameState: GameState.NOT_STARTED,
         tokenMap: {},
         roomUsers: [],
-        history: new Map(),
+        history: [],
     });
     const value = {state, dispatch}
     return <GameContext.Provider value={value}>{children}</GameContext.Provider>

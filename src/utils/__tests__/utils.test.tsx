@@ -1,8 +1,9 @@
 import { makeLine, toMove, doMove } from "..";
 import { startState } from "../../game/start";
-import { Coordinate, GridData, TokenData } from "../../types"
+import { Coordinate, CoordinateMove, GridData, TokenData } from "../../types"
 import { GameState } from "../../types/gameState";
 import { checkGameState, filterIllegalMoves, getLegalMoves, inLegalCells, roleToName } from "../chessUtils";
+import { applyHistory } from "../tokenMapUtils";
 
 
 
@@ -65,3 +66,23 @@ test("white checked", () => {
     doMove(toMove(1, c(3,0), c(5,6)), grid, map);
     expect(checkGameState(GameState.PLAYING, map,  grid)).toEqual(GameState.PLAYING);
 })
+
+test("apply history test", () => {
+    const map = startState(grid);
+    const history: CoordinateMove[] = [
+        {turn: 0, from: [3,6], to: [3, 4]},
+        {turn: 1, from: [3,1], to: [3, 3]}
+    ]
+
+    expect(applyHistory(map, history, grid)).toEqual({
+        ...startState(grid),
+        wp3: {
+            ...map.wp3,
+            coord: { x: 3, y:4, grid}
+        },
+        bp3: {
+            ...map.bp3,
+            coord: {x: 3, y: 3, grid}
+        }
+    })
+});

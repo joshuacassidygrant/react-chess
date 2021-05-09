@@ -44,7 +44,7 @@ export const Game: FC = (): ReactElement => {
             currentGameState: GameState.NOT_STARTED,
             tokenMap: startState(grid),
             roomUsers: [],
-            history:new Map()
+            history: [],
         }});
 
         ctx.dispatch({type: "start-game"});

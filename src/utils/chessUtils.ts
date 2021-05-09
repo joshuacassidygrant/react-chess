@@ -99,7 +99,7 @@ export function filterIllegalMoves(tokenMap: TokenMap, tokenId: string, tokenDat
     return coords.filter(c => !checkedColors(forecastTokenData({ ...tokenMap }, { [tokenId]: testToken.setCoordAndReturn(c) })).includes(tokenData.player));
 }
 
-export function getLegalMoves(tokenId: string, tokenMap: TokenMap, grid: GridData, history:Map<number, CoordinateMove[]> ): Coordinate[] {
+export function getLegalMoves(tokenId: string, tokenMap: TokenMap, grid: GridData, history: CoordinateMove[] ): Coordinate[] {
     const token = tokenMap[tokenId];
     if (!token) {
         throw Error(`No piece with id ${tokenId}`);
@@ -160,19 +160,17 @@ export function generateCastlingMoves(tokenId: string, tokenMap: TokenMap): [Coo
     return moves;
 }
 
-export function generateEnPassantMoves(tokenId: string, tokenMap: TokenMap, history:  Map<number, CoordinateMove[]>): [Coordinate, [Coordinate, Coordinate | null][]][] {
+export function generateEnPassantMoves(tokenId: string, tokenMap: TokenMap, history: CoordinateMove[]): [Coordinate, [Coordinate, Coordinate | null][]][] {
     // 1. Check if this piece is a pawn
     const tokenData = tokenMap[tokenId];
     if (tokenData.pieceKey !== "pawn" || !tokenData.coord) return [];
     // 2: Check if the last piece that moved was a pawn that double moved
-    const turnKeys = Array.from(history.keys())
-    turnKeys.sort();
-    const lastTurn = history.get(turnKeys[turnKeys.length - 1]);
+    const lastTurn = history[history.length - 1];
     if (!lastTurn) return [];
-    const lastDestination = lastTurn[0].to;
+    const lastDestination = lastTurn.to;
     if (!lastDestination) return [];
     const lastPiece = getTokenAtCoordinate({x: lastDestination[0], y: lastDestination[1], grid: tokenData.coord.grid}, tokenMap);
-    if (!lastPiece || !lastPiece[1].coord || lastPiece[1].pieceKey !== "pawn" || Math.abs(lastTurn[0].from[1] - lastDestination[1]) !== 2) return [];
+    if (!lastPiece || !lastPiece[1].coord || lastPiece[1].pieceKey !== "pawn" || Math.abs(lastTurn.from[1] - lastDestination[1]) !== 2) return [];
    
     // 3: Check if last piece is to the left or right of current piece
     if (coordinatesEqual(lastPiece[1].coord, {...tokenData.coord, x: tokenData.coord.x + 1}) 

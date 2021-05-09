@@ -62,7 +62,6 @@ test("start-game sets turn, state and tokenmap correctly", () => {
 test("move moves one piece on tokenmap and increments turn", () => {
     gameReducer(initializedState, {type: "start-game"});
     const move = {turn: 0, from:[4, 6], to:[4,4]};
-    const history = new Map();
-    history.set(0, [move]);
+    const history = [move]
     expect(gameReducer(initializedState, {type: "move", payload:move})).toEqual({...initializedState, turn: 1, history, tokenMap: {...startState(grid), wp4: {...startState(grid).wp4, hasMoved: true, coord: {x: 4, y:4, grid}}}});
 }) 

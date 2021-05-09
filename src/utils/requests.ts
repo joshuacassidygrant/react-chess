@@ -27,3 +27,9 @@ export function requestRandomString(words: number, callback: (str: string) => vo
     .then(res => res.text())
     .then(res => callback(res));
 }
+
+export function requestRoomHistory(room: string, callback: (moves: CoordinateMove[]) => void) : void {
+    fetch(`http://localhost:3001/history?room=${room}`)
+    .then(res => res.json())
+    .then(res => callback(res));
+}
