@@ -35,9 +35,12 @@ export function gameReducer(state: State, action: Action) {
             return action.payload;
         case "change-room":
             // TODO: validate room
+            const room = action.payload;
+            room ? sessionStorage.setItem("rc-room", room) : sessionStorage.removeItem("rc-room");
+            
             return {
                 ...state,
-                room: action.payload
+                room
             }
         case "consume-history":
             const history = action.payload;
@@ -53,9 +56,11 @@ export function gameReducer(state: State, action: Action) {
             }
         case "set-user":
             // TODO: validate user
+            const user = action.payload;
+            sessionStorage.setItem("rc-user", JSON.stringify(user));
             return {
                 ...state,
-                user: action.payload
+                user
             }
         case "set-gamestate":
             // TODO: validate

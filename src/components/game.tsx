@@ -48,6 +48,15 @@ export const Game: FC = (): ReactElement => {
         }});
 
         ctx.dispatch({type: "start-game"});
+
+        if (sessionStorage.getItem("rc-user") && sessionStorage.getItem("rc-room"))  {
+            ctx.dispatch({type: "change-room", payload: sessionStorage.getItem("rc-room")})
+            const userString = sessionStorage.getItem("rc-user");
+            if (userString) {
+                const user = JSON.parse(userString);
+                ctx.dispatch({type: "set-user", payload: {...user, socket: socket.id,}});
+            }
+        }
         
         socket.on("approved-move", function(move: CoordinateMove) {
             ctx.dispatch({type: "move", payload: move})
@@ -72,7 +81,7 @@ export const Game: FC = (): ReactElement => {
         ctx.dispatch({type: "set-gamestate", payload: checkGameState(currentGameState, tokenMap, grid)});
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tokenMap])
-
+    
     return (
         <div>
             {!room || !user || user.role === -1 ? (<StartPanel />) :
