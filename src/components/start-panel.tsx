@@ -1,6 +1,6 @@
 import {FC, ReactElement, useEffect, useState} from "react";
 import {Flex, Box} from "rebass";
-import { chooseRole, joinRoom, requestNewUser, requestRandomString, requestRoomHistory } from "../utils";
+import { chooseRole, joinRoom, requestNewUser, requestRandomString, requestRoomData, requestRoomHistory } from "../utils";
 import { RandomButton } from "./random-button";
 import { TextInput } from "./text-input";
 import {useGameContext} from "./game-context";
@@ -91,10 +91,11 @@ export const StartPanel: FC = (): ReactElement => {
                     }).then(res => {
                         ctx.dispatch({type: "set-user", payload: res})
                         joinRoom(socket, currentRoomInput, res.id);
-                        requestRoomHistory(currentRoomInput, (moves) => {
-                            ctx.dispatch({type: "consume-history", payload: moves})
-                        })
-                        ctx.dispatch({type: "change-room", payload: currentRoomInput});
+                        return requestRoomData(currentRoomInput);
+                    }).then(res => {
+                        return res.json();
+                    }).then(res => {
+                        ctx.dispatch({type: "change-room", payload: res})
                     })
                 }}>Join Room</button> 
             </Box>

@@ -5,15 +5,14 @@ import { GameState } from "../types/gameState";
 import { applyHistory, checkGameState, doMove, requestRoomData } from "../utils";
 
 type Action = {type: "init", payload: State} | 
-            {type: "change-room", payload: string | null} |
+            {type: "change-room", payload: any | null} |
             {type: "set-user", payload: User | null} |
             {type: "set-gamestate", payload: GameState} |
             {type: "set-tokenmap", payload: TokenMap} |
             {type: "start-game"} |
             {type: "set-users", payload: User[]} |
             {type: "move", payload: CoordinateMove} |
-            {type: "consume-history", payload: CoordinateMove[]} |
-            {type: "consume-room-data", payload: any}
+            {type: "consume-history", payload: CoordinateMove[]}
 type Dispatch = (action: Action) => void;
 export type State = {
     socket: any | null,
@@ -36,14 +35,27 @@ export function gameReducer(state: State, action: Action) {
             return action.payload;
         case "change-room":
             // TODO: validate room
-            const room = action.payload;
-            room ? sessionStorage.setItem("rc-room", room) : sessionStorage.removeItem("rc-room");
+            const roomData = action.payload;
+            console.log(roomData);
+            if (roomData == null) {
+                sessionStorage.removeItem("rc-room");
+                return {
+                    ...state,
+                    room: null,
+                    history: [],
+                    tokenMap: {},
+                    turn: -1,
+                    roomUsers: [],
+                }
+            }
+            sessionStorage.setItem("rc-room", roomData.name); 
 
-            let history = action.payload.history;
+            let history = roomData.history;
             let tokenMap = applyHistory(startState(state.grid), history, state.grid);
             let currentGameState = history.length === 0 ? GameState.NOT_STARTED : checkGameState(GameState.PLAYING, tokenMap, state.grid);
             let turn = history.length === 0 ? 0 : history[history.length - 1].turn + 1;
-            let roomUsers = action.payload.users;
+            let roomUsers = roomData.users;
+            let room = roomData.name;
             return {
                 ...state,
                 history,

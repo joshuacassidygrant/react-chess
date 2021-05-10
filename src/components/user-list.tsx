@@ -13,15 +13,17 @@ const  StyledUserList = styled(Box)`
 
 export const UserList: FC =  () => {
     const ctx = useGameContext();
-    const {roomUsers} = ctx.state;
-
+    const state = ctx.state;
+    const roomUsers: any = state.roomUsers;
+    const roomUserKeys: string[] = Object.keys(roomUsers);
     return (
         <StyledUserList>
             <h3>Users in this Room:</h3>
             <ul>
-            {roomUsers.map(user => {
+            {roomUserKeys.map((uid: string) => {
+                const user = roomUsers[uid];
                 return (
-                    <li key={user.id}>{user.data.name} ({roleToName(user.role)})</li>
+                    <li key={uid}>{user.data.name} ({roleToName(user.role)})</li>
                 )
             })}
             </ul>
