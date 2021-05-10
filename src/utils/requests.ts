@@ -10,8 +10,8 @@ export function joinRoom(socket: any, room: string, uid: string): void {
     socket.emit("request-join-room", {room, uid});
 }
 
-export function chooseRole(socket: any, room:string, role:number): void {
-    socket.emit("request-role", {role, room});
+export function chooseRole(socket: any, uid: string, room:string, role:number): void {
+    socket.emit("request-role", {role, uid, room});
 }
 
 export function sendChat(socket: any, room: string, username: string, message: string): void {

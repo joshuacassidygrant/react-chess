@@ -102,20 +102,20 @@ export const StartPanel: FC = (): ReactElement => {
             ) : (
             <Box>
                 <div>
-                    <button disabled={roomUsers.filter(el => el.role === 0).length > 0} onClick={() => {
+                    <button disabled={Object.values(roomUsers).filter(el => el.role === 0).length > 0} onClick={() => {
                         if (!user || !room) return;
-                        chooseRole(socket, room, 0); 
-                        ctx.dispatch({type: "set-user", payload: {...user, role: 0}});
+                        chooseRole(socket, user.id, room, 0); 
+                        ctx.dispatch({type: "set-user-role", payload: {uid: user.id, role: 0}});
                     }}>Join as White</button>
-                    <button disabled={roomUsers.filter(el => el.role === 1).length > 0} onClick={() => {
+                    <button disabled={Object.values(roomUsers).filter(el => el.role === 1).length > 0} onClick={() => {
                         if (!user || !room) return;
-                        chooseRole(socket, room, 1); 
-                        ctx.dispatch({type: "set-user", payload: {...user, role: 1}});
+                        chooseRole(socket, user.id, room, 1); 
+                        ctx.dispatch({type: "set-user-role", payload: {uid: user.id, role: 1}});
                     }}>Join as Black</button>
                     <button onClick={() => {
                         if (!user || !room) return;
-                        chooseRole(socket, room, 2); 
-                        ctx.dispatch({type: "set-user", payload: {...user, role: 2}});
+                        chooseRole(socket, user.id, room, 2); 
+                        ctx.dispatch({type: "set-user-role", payload: {uid: user.id, role: 2}});
                     }}>Join as Spectator</button>
                     <button onClick={() => {setCurrentRoomInput(""); ctx.dispatch({type: "change-room", payload: null});}}>Leave Room</button>
                 </div>

@@ -22,7 +22,7 @@ const width:number = 600;
 
 export const Game: FC = (): ReactElement => {
     const ctx = useGameContext();
-    const {room, user, grid, socket, currentGameState, tokenMap, turn, history} = ctx.state;
+    const {room, user, grid, socket, currentGameState, tokenMap, turn, history, currentUserRole} = ctx.state;
 
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
@@ -43,8 +43,9 @@ export const Game: FC = (): ReactElement => {
             room: null,
             currentGameState: GameState.NOT_STARTED,
             tokenMap: startState(grid),
-            roomUsers: [],
+            roomUsers: new Map(),
             history: [],
+            currentUserRole: -1
         }});
 
         ctx.dispatch({type: "start-game"});
@@ -77,7 +78,7 @@ export const Game: FC = (): ReactElement => {
         
         socket.on("users-changed", function(users: any) {
             console.log(users);
-            ctx.dispatch({type: "set-users", payload: Object.values(users)});
+            ctx.dispatch({type: "set-users", payload: new Map(Object.entries(users))});
         });
 
         socket.on("restart-game", function() {
@@ -98,7 +99,7 @@ export const Game: FC = (): ReactElement => {
 
     return (
         <div>
-            {!room || !user || user.role === -1 ? (<StartPanel />) :
+            {!room || !user || currentUserRole === -1 ? (<StartPanel />) :
             <Box width={1100} mx="auto">
                 <GameInfo/>
                 <Flex width={1100} mx="auto">

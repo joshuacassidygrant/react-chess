@@ -5,25 +5,27 @@ import { GameState } from "../types/gameState";
 import { applyHistory, checkGameState, doMove, requestRoomData } from "../utils";
 
 type Action = {type: "init", payload: State} | 
-            {type: "change-room", payload: any | null} |
+            {type: "change-room", payload: {history: CoordinateMove[], users: User[], name: string} | null} |
             {type: "set-user", payload: User | null} |
             {type: "set-gamestate", payload: GameState} |
             {type: "set-tokenmap", payload: TokenMap} |
             {type: "start-game"} |
-            {type: "set-users", payload: User[]} |
+            {type: "set-users", payload: Map<string, User>} |
             {type: "move", payload: CoordinateMove} |
-            {type: "consume-history", payload: CoordinateMove[]}
+            {type: "consume-history", payload: CoordinateMove[]} |
+            {type: "set-user-role", payload: {uid: string, role: number}}
 type Dispatch = (action: Action) => void;
 export type State = {
     socket: any | null,
     grid: GridData,
-    user: User | null,
+    user: User | null | undefined,
     room: string | null,
     turn: number,
     currentGameState: GameState,
     tokenMap: TokenMap,
-    roomUsers: User[],
-    history: CoordinateMove[]
+    roomUsers: Map<string, User>,
+    history: CoordinateMove[],
+    currentUserRole: number,
 }
 type GameContextProviderProps = {children: React.ReactNode}
 
@@ -36,7 +38,7 @@ export function gameReducer(state: State, action: Action) {
         case "change-room":
             // TODO: validate room
             const roomData = action.payload;
-            console.log(roomData);
+
             if (roomData == null) {
                 sessionStorage.removeItem("rc-room");
                 return {
@@ -45,16 +47,21 @@ export function gameReducer(state: State, action: Action) {
                     history: [],
                     tokenMap: {},
                     turn: -1,
-                    roomUsers: [],
+                    roomUsers: new Map(),
+                    currentUserRole: -1
                 }
             }
             sessionStorage.setItem("rc-room", roomData.name); 
-
             let history = roomData.history;
             let tokenMap = applyHistory(startState(state.grid), history, state.grid);
             let currentGameState = history.length === 0 ? GameState.NOT_STARTED : checkGameState(GameState.PLAYING, tokenMap, state.grid);
             let turn = history.length === 0 ? 0 : history[history.length - 1].turn + 1;
-            let roomUsers = roomData.users;
+            let roomUsers = new Map<string, User>(Object.entries(roomData.users));
+            let userId: string | undefined = state.user?.id;
+            let user: User | undefined = userId ?  roomUsers.get(userId) : undefined;
+            let currentUserRole = user ? user.role : -1;
+            
+
             let room = roomData.name;
             return {
                 ...state,
@@ -63,7 +70,8 @@ export function gameReducer(state: State, action: Action) {
                 currentGameState,
                 turn,
                 roomUsers,
-                room
+                room,
+                currentUserRole
             }
         case "consume-history":
             history = action.payload;
@@ -79,11 +87,28 @@ export function gameReducer(state: State, action: Action) {
             }           
         case "set-user":
             // TODO: validate user
-            const user = action.payload;
-            sessionStorage.setItem("rc-user", JSON.stringify(user));
+            let setUser = action.payload ? action.payload : undefined;
+            if (setUser) {
+                sessionStorage.setItem("rc-user", JSON.stringify(setUser));
+            }
             return {
                 ...state,
-                user
+                user: setUser
+            }
+        case "set-user-role":
+            //TODO: validate
+            let role = action.payload.role;
+            let uid: string = action.payload.uid;
+            console.log(state.roomUsers);
+            let newUser = state.roomUsers.get(uid);
+
+            let newRoomUsers = new Map(state.roomUsers);
+            newUser ? newRoomUsers.set(uid, newUser) : console.log("No user");
+
+            return {
+                ...state,
+                currentUserRole: role,
+                roomUsers: newRoomUsers
             }
         case "set-gamestate":
             // TODO: validate
@@ -99,7 +124,6 @@ export function gameReducer(state: State, action: Action) {
             }
         case "set-users":
             //TODO: validate
-            console.log(action);
             return {
                 ...state,
                 roomUsers: action.payload
@@ -113,13 +137,12 @@ export function gameReducer(state: State, action: Action) {
             }
         case "move":
             //TODO: validate
-
+            
             return {
                 ...state,
                 turn: action.payload.turn + 1,
                 tokenMap: doMove(action.payload, state.grid, state.tokenMap),
                 history:  [...state.history, action.payload]
-
             }
     }
 }
@@ -133,8 +156,9 @@ export function GameContextProvider({children}: GameContextProviderProps) {
         turn: -1,
         currentGameState: GameState.NOT_STARTED,
         tokenMap: {},
-        roomUsers: [],
+        roomUsers: new Map<string, User>(),
         history: [],
+        currentUserRole: -1
     });
     const value = {state, dispatch}
     return <GameContext.Provider value={value}>{children}</GameContext.Provider>
