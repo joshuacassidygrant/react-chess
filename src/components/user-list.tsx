@@ -16,7 +16,6 @@ export const UserList: FC =  () => {
     const state = ctx.state;
     const roomUsers: any = state.roomUsers;
     const roomUserKeys: string[] = Array.from(roomUsers.keys());
-    console.log(roomUserKeys);
     return (
         <StyledUserList>
             <h3>Users in this Room:</h3>

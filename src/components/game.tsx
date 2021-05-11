@@ -77,7 +77,6 @@ export const Game: FC = (): ReactElement => {
         });
         
         socket.on("users-changed", function(users: any) {
-            console.log(users);
             ctx.dispatch({type: "set-users", payload: new Map(Object.entries(users))});
         });
 

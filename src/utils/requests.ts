@@ -18,8 +18,8 @@ export function sendChat(socket: any, room: string, username: string, message: s
     socket.emit("request-chat", {room, username, message});
 }
 
-export function changeName(socket: any, room: string, name: string): void {
-    socket.emit("request-namechange", {socket: socket.id, room, name});
+export function changeName(socket: any, room: string, user: User, name: string): void {
+    socket.emit("request-namechange", {socket: socket.id, uid: user.id, room, name});
 }
 
 export function requestRandomString(words: number, callback: (str: string) => void): void {
