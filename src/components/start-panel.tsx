@@ -95,6 +95,7 @@ export const StartPanel: FC = (): ReactElement => {
                     }).then(res => {
                         return res.json();
                     }).then(res => {
+                        console.log(res);
                         ctx.dispatch({type: "change-room", payload: res})
                     })
                 }}>Join Room</button> 
@@ -102,12 +103,12 @@ export const StartPanel: FC = (): ReactElement => {
             ) : (
             <Box>
                 <div>
-                    <button disabled={Object.values(roomUsers).filter(el => el.role === 0).length > 0} onClick={() => {
+                    <button disabled={Array.from(roomUsers.values()).filter(el => el.role === 0).length > 0} onClick={() => {
                         if (!user || !room) return;
                         chooseRole(socket, user.id, room, 0); 
                         ctx.dispatch({type: "set-user-role", payload: {uid: user.id, role: 0}});
                     }}>Join as White</button>
-                    <button disabled={Object.values(roomUsers).filter(el => el.role === 1).length > 0} onClick={() => {
+                    <button disabled={Array.from(roomUsers.values()).filter(el => el.role === 1).length > 0} onClick={() => {
                         if (!user || !room) return;
                         chooseRole(socket, user.id, room, 1); 
                         ctx.dispatch({type: "set-user-role", payload: {uid: user.id, role: 1}});
