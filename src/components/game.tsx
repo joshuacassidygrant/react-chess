@@ -52,19 +52,19 @@ export const Game: FC = (): ReactElement => {
 
         const uString = sessionStorage.getItem("rc-user");
         const storedUser: {name: string, id: string} | null = uString ?  JSON.parse(uString) : null;
-        if (storedUser) {
-            requestUserReconnect(storedUser.id).then(res => {
+        const roomName = sessionStorage.getItem("rc-room");
+
+        if (storedUser && roomName) {
+            requestUserReconnect(storedUser.id, roomName).then(res => {
                 return res.json();
             }).then( res => {
-                const uid = res.id;
+                const uid = res.user.id;
                 if (uid) {
-                    const user = res;
+                    const user = res.user;
                     ctx.dispatch({type: "set-user", payload: {...user, socket: socket.id,}});
+                    ctx.dispatch({type: "set-user-role", payload: {uid, role: res.role}})
                 }
-                const roomName = sessionStorage.getItem("rc-room");
-                if (roomName)  {
-                    return requestRoomData(roomName);
-                }
+                return requestRoomData(roomName);
             }).then(res => {
                 return res.json();
             }).then(res => {
@@ -142,7 +142,7 @@ export const Game: FC = (): ReactElement => {
                         } 
                         tokenClick={
                             (e, id) =>{
-                                if (turn % 2 === user.role && tokenMap[id].player === turn % 2) {
+                                if (turn % 2 === currentUserRole && tokenMap[id].player === turn % 2) {
                                     setSelectedToken(id);
                                     const token = tokenMap[id];
                                     token.isSelected = true;

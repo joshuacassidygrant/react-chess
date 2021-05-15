@@ -34,8 +34,8 @@ export function requestRoomHistory(room: string, callback: (moves: CoordinateMov
     .then(res => callback(res));
 }
 
-export function requestUserReconnect(uid: string) : Promise<any>  {
-    return fetch(`http://localhost:3001/user?uid=${uid}`);
+export function requestUserReconnect(uid: string, room: string) : Promise<any>  {
+    return fetch(`http://localhost:3001/user?uid=${uid}&&room=${room}`);
 }
 
 export function requestNewUser(name: string) : Promise<any> {

@@ -89,8 +89,8 @@ export const StartPanel: FC = (): ReactElement => {
                     requestNewUser(currentNameInput).then((res) => {
                         return res.json();
                     }).then(res => {
-                        ctx.dispatch({type: "set-user", payload: res})
-                        joinRoom(socket, currentRoomInput, res.id);
+                        ctx.dispatch({type: "set-user", payload: res.user})
+                        joinRoom(socket, currentRoomInput, res.user.id);
                         return requestRoomData(currentRoomInput);
                     }).then(res => {
                         return res.json();
