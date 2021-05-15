@@ -106,10 +106,16 @@ export function gameReducer(state: State, action: Action) {
             let newRoomUsers = new Map(state.roomUsers);
             newUser ? newRoomUsers.set(uid, newUser) : console.log("No user");
 
+            let currentUser = state.user;
+            if (currentUser && uid === currentUser.id) {
+                currentUser.role = role;
+            }
+
             return {
                 ...state,
                 currentUserRole: role,
-                roomUsers: newRoomUsers
+                roomUsers: newRoomUsers,
+                user: currentUser
             }
         case "set-gamestate":
             // TODO: validate
