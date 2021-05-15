@@ -58,7 +58,7 @@ export const Game: FC = (): ReactElement => {
             }).then( res => {
                 const uid = res.id;
                 if (uid) {
-                    const user = JSON.parse(res);
+                    const user = res;
                     ctx.dispatch({type: "set-user", payload: {...user, socket: socket.id,}});
                 }
                 const roomName = sessionStorage.getItem("rc-room");
