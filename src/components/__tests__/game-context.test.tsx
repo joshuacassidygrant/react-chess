@@ -43,7 +43,7 @@ test("change-room with unstarted game", () => {
 });
 
 test("set-user reducer should set user only", () => {
-    expect(gameReducer(initializedState, {type: "set-user", payload: user})).toEqual({...initializedState, {id: user.id, data: user, role: -1}});
+    expect(gameReducer(initializedState, {type: "set-user", payload: user})).toEqual({...initializedState, user: {id: user.id, data: user, role: -1}});
 });
 
 test("set-gamestate should set gamestate only", () => {
