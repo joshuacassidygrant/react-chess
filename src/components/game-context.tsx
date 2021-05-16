@@ -2,7 +2,7 @@ import React, { createContext, useReducer, useContext } from "react";
 import { startState } from "../game/start";
 import { CoordinateMove, GridData, TokenMap, User } from "../types";
 import { GameState } from "../types/gameState";
-import { applyHistory, checkGameState, doMove, requestRoomData } from "../utils";
+import { applyHistory, checkGameState, doMove } from "../utils";
 
 type Action = { type: "init", payload: State } |
 { type: "change-room", payload: { history: CoordinateMove[], users: User[], name: string } | null } |

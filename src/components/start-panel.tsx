@@ -1,6 +1,6 @@
 import {FC, ReactElement, useEffect, useState} from "react";
 import {Flex, Box} from "rebass";
-import { chooseRole, joinRoom, requestNewUser, requestRandomString, requestRoomData, requestRoomHistory } from "../utils";
+import { chooseRole, joinRoom, requestNewUser, requestRandomString, requestRoomData } from "../utils";
 import { RandomButton } from "./random-button";
 import { TextInput } from "./text-input";
 import {useGameContext} from "./game-context";
