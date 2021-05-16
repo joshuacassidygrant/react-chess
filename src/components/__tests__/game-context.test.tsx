@@ -11,8 +11,10 @@ const preinitialState = {
     turn: -1,
     currentGameState: GameState.NOT_STARTED,
     tokenMap: {},
-    roomUsers: [],
-    history: new Map()
+    roomUsers: new Map<string, User>(),
+    history: [],
+    currentUserRole: -1
+
 };
 const grid = new GridData("testGrid", 2, 2, 2, 2);
 
@@ -24,23 +26,24 @@ const initializedState ={
     room: null,
     currentGameState: GameState.NOT_STARTED,
     tokenMap: startState(grid),
-    roomUsers: [],
-    history: new Map()
+    roomUsers: new Map<string, User>(),
+    history: [],
+    currentUserRole: -1
 }
 
-const user: User = {socket: "test", name: "Felipe Testorossa", role:-1}
-const user2: User = {socket: "test", name: "Ms. Testorini", role:-1}
+const user = {id: "test", name: "Felipe Testorossa"}
+const user2 = {id: "test", name: "Ms. Testorini"}
 
 test("init reducer should return the context passed in", () => {
     expect(gameReducer(preinitialState, {type: "init", payload: initializedState})).toEqual(initializedState);
 });
 
-test("change-room should set room only", () => {
-    expect(gameReducer(initializedState, {type: "change-room", payload: "Room3"})).toEqual({...initializedState, room: "Room3"});
+test("change-room with unstarted game", () => {
+    expect(gameReducer(initializedState, {type: "change-room", payload: {history: [], users: [], name: "Room3"}})).toEqual({...initializedState, room: "Room3"});
 });
 
 test("set-user reducer should set user only", () => {
-    expect(gameReducer(initializedState, {type: "set-user", payload: user})).toEqual({...initializedState, user});
+    expect(gameReducer(initializedState, {type: "set-user", payload: user})).toEqual({...initializedState, {id: user.id, data: user, role: -1}});
 });
 
 test("set-gamestate should set gamestate only", () => {
