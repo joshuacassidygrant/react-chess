@@ -1,12 +1,8 @@
-import React from 'react';
-import reportWebVitals from "./reportWebVitals";
 import "./App.css";
 import {Game} from "./components/game";
 import { GameContextProvider } from './components/game-context';
 
 function App() {
-  // temp
-  reportWebVitals(console.log)
 
   return (
     <div className="App">
