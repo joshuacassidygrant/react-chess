@@ -76,7 +76,7 @@ export function getInitData(socket: any, grid: GridData, ctx: any ) : Promise<St
             if (!user) return null;
             const uid = res.user.id;
             if (uid) {
-                state.user = res.user;
+                state.user = {id: uid, data: res.user, role: -1};
             }
             return requestRoomData(roomName);
         }).then(res => {
@@ -92,7 +92,8 @@ export function getInitData(socket: any, grid: GridData, ctx: any ) : Promise<St
             state.turn = roomData.history.length === 0 ? 0 :roomData.history[roomData.history.length - 1].turn + 1;
             if (storedUser.id in roomData.users) {
                 const roomUser = roomData.users[storedUser.id];
-                state.currentUserRole = roomUser.role;   
+                state.currentUserRole = roomUser.role;
+                if (state.user) state.user.role = roomUser.role;   
             }
             socket.emit("request-join-room", {room: roomData.name, uid: storedUser.id, role: state.currentUserRole});
             return(state);

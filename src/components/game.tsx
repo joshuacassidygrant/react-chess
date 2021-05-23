@@ -40,11 +40,6 @@ export const Game: FC = (): ReactElement => {
             ctx.dispatch({type: "init", payload: res});
         });
 
-
-        ctx.dispatch({type: "start-game"});
-
-
-
         socket.on("approved-move", function(move: CoordinateMove) {
             ctx.dispatch({type: "move", payload: move})
         });
@@ -59,25 +54,22 @@ export const Game: FC = (): ReactElement => {
 
         socket.on("room-joined", function(res: any) {
             const uid: string = res.uid;
-            const room = res.room;
+            if (user && uid === user.id) {
+                const room = res.room;
+                requestRoomData(room).then(res => {
+                    return res.json();
+                }).then(res => {
+                    if (res === null) return null;
+                    ctx.dispatch({type: "change-room", payload: res})
+                });
+            }
 
-            //if (uid === user?.id) {
-                //ctx.dispatch({type: "change-room", payload: room})
-            //}
-            requestRoomData(room).then(res => {
-                return res.json();
-            }).then(res => {
-                if (res === null) return null;
-                console.log(res);
-                ctx.dispatch({type: "change-room", payload: res})
-            });
         })
 
        
 
         return () => {
-            // clean up goes here
-            //socket.emit("leave-room", {uid: user?.id, room});
+            socket.emit("leave-room", {uid: user?.id, room});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
