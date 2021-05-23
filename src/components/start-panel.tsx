@@ -30,6 +30,7 @@ export const StartPanel: FC = (): ReactElement => {
         } else if (currentNameInput === "") {
             requestRandomString(2, (txt)=>{setCurrentNameInput(txt)});
         }
+        // TODO later: url string requests for invites
         /*
         if (name && roomname) {
             joinRoom(socket, {roomname, name});
@@ -95,7 +96,6 @@ export const StartPanel: FC = (): ReactElement => {
                     }).then(res => {
                         return res.json();
                     }).then(res => {
-                        console.log(res);
                         ctx.dispatch({type: "change-room", payload: res})
                     })
                 }}>Join Room</button> 

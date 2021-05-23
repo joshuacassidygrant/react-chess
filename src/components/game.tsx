@@ -3,16 +3,13 @@ import {io} from "socket.io-client";
 
 import {Board} from "./board";
 import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
-import {startState} from "../game/start";
-import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual, requestUserReconnect, requestRoomData, getInitData} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual, requestRoomData, getInitData} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
 import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
-import { GameState } from "../types/gameState";
 import { useGameContext} from "./game-context";
-import { resourceLimits } from "node:worker_threads";
 
 
 // GAME CONSTANTS
