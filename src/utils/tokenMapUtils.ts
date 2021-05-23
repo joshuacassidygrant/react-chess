@@ -19,7 +19,7 @@ export function removeTokenData(map: TokenMap, id: string): TokenMap {
 }
 
 export function applyHistory(map: TokenMap, history: CoordinateMove[], grid: GridData): TokenMap {
-
+    if (!history) return map;
     history.forEach(move => {
         doMove(move, grid, map)
     })

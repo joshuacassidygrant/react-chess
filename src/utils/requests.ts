@@ -1,4 +1,8 @@
-import { CoordinateMove, User } from "../types";
+import { applyHistory, checkGameState } from ".";
+import { State } from "../components/game-context";
+import { startState } from "../game/start";
+import { CoordinateMove, GridData, User } from "../types";
+import { GameState } from "../types/gameState";
 
 export const socketEndpoint = "http://localhost:3001";
 
@@ -44,4 +48,57 @@ export function requestNewUser(name: string) : Promise<any> {
 
 export function requestRoomData(room: string) : Promise<any> {
     return fetch(`http://localhost:3001/room?room=${room}`)
+}
+
+export function getInitData(socket: any, grid: GridData, ctx: any ) : Promise<State> {
+    const state: State = {
+        socket,
+        grid,
+        turn: 0,
+        user: null,
+        room: null,
+        currentGameState: GameState.NOT_STARTED,
+        tokenMap: startState(grid),
+        roomUsers: new Map<string, User>(),
+        history: [],
+        currentUserRole: -1
+    }
+
+    const uString = sessionStorage.getItem("rc-user");
+    const storedUser: {name: string, id: string} | null = uString ?  JSON.parse(uString) : null;
+    const roomName = sessionStorage.getItem("rc-room");
+
+    if (storedUser && roomName) {
+        return requestUserReconnect(storedUser.id, roomName).then(res => {
+            return res.json();
+        }).then( res => {
+            const user = res.user;
+            if (!user) return null;
+            const uid = res.user.id;
+            if (uid) {
+                state.user = res.user;
+            }
+            return requestRoomData(roomName);
+        }).then(res => {
+            if (res === null) return null;
+            return res.json();
+        }).then(roomData => {
+            if (roomData === null) return(state);
+            state.room = roomData.name;
+            state.roomUsers = new Map<string, User>(Object.entries(roomData.users));
+            state.history = roomData.history;
+            state.tokenMap = applyHistory(startState(state.grid), roomData.history, state.grid);
+            state.currentGameState = roomData.history.length === 0 ? GameState.NOT_STARTED : checkGameState(GameState.PLAYING, state.tokenMap, state.grid);
+            state.turn = roomData.history.length === 0 ? 0 :roomData.history[roomData.history.length - 1].turn + 1;
+            if (storedUser.id in roomData.users) {
+                const roomUser = roomData.users[storedUser.id];
+                state.currentUserRole = roomUser.role;   
+            }
+            socket.emit("request-join-room", {room: roomData.name, uid: storedUser.id, role: state.currentUserRole});
+            return(state);
+        })  
+    }
+    return new Promise<State>((resolve, reject) => {
+        resolve(state);
+    })
 }

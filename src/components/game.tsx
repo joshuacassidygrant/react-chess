@@ -1,10 +1,10 @@
-import React, {FC, ReactElement, useState, useEffect} from "react";
+import {FC, ReactElement, useState, useEffect} from "react";
 import {io} from "socket.io-client";
 
 import {Board} from "./board";
 import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
 import {startState} from "../game/start";
-import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual, requestUserReconnect, requestRoomData} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual, requestUserReconnect, requestRoomData, getInitData} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
@@ -12,6 +12,7 @@ import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
 import { GameState } from "../types/gameState";
 import { useGameContext} from "./game-context";
+import { resourceLimits } from "node:worker_threads";
 
 
 // GAME CONSTANTS
@@ -35,42 +36,14 @@ export const Game: FC = (): ReactElement => {
         const socket = io(socketEndpoint);
         const grid = new GridData("chessGrid", height, width, xWidthCells, yHeightCells);
 
-        ctx.dispatch({type: "init", payload: {
-            socket,
-            grid,
-            turn: 0,
-            user: null,
-            room: null,
-            currentGameState: GameState.NOT_STARTED,
-            tokenMap: startState(grid),
-            roomUsers: new Map(),
-            history: [],
-            currentUserRole: -1
-        }});
+        getInitData(socket, grid, ctx).then(res => {
+            ctx.dispatch({type: "init", payload: res});
+        });
+
 
         ctx.dispatch({type: "start-game"});
 
-        const uString = sessionStorage.getItem("rc-user");
-        const storedUser: {name: string, id: string} | null = uString ?  JSON.parse(uString) : null;
-        const roomName = sessionStorage.getItem("rc-room");
 
-        if (storedUser && roomName) {
-            requestUserReconnect(storedUser.id, roomName).then(res => {
-                return res.json();
-            }).then( res => {
-                const uid = res.user.id;
-                if (uid) {
-                    const user = res.user;
-                    ctx.dispatch({type: "set-user", payload: {...user, socket: socket.id,}});
-                    ctx.dispatch({type: "set-user-role", payload: {uid, role: res.role}})
-                }
-                return requestRoomData(roomName);
-            }).then(res => {
-                return res.json();
-            }).then(res => {
-                ctx.dispatch({type: "change-room", payload: res})
-            })
-        }
 
         socket.on("approved-move", function(move: CoordinateMove) {
             ctx.dispatch({type: "move", payload: move})
@@ -84,9 +57,27 @@ export const Game: FC = (): ReactElement => {
             ctx.dispatch({type: "start-game"});
         });
 
+        socket.on("room-joined", function(res: any) {
+            const uid: string = res.uid;
+            const room = res.room;
+
+            //if (uid === user?.id) {
+                //ctx.dispatch({type: "change-room", payload: room})
+            //}
+            requestRoomData(room).then(res => {
+                return res.json();
+            }).then(res => {
+                if (res === null) return null;
+                console.log(res);
+                ctx.dispatch({type: "change-room", payload: res})
+            });
+        })
+
+       
+
         return () => {
             // clean up goes here
-            socket.emit("leave-room", {uid: user?.id, room});
+            //socket.emit("leave-room", {uid: user?.id, room});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
