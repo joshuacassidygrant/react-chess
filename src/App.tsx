@@ -1,7 +1,9 @@
-import {} from 'dotenv/config'
+import * as dotenv from "dotenv"
 import "./App.css";
 import {Game} from "./components/game";
 import { GameContextProvider } from './components/game-context';
+
+dotenv.config();
 
 function App() {
 
