@@ -7,6 +7,8 @@ import { GameState } from "../types/gameState";
 export const bePath = process.env.NODE_ENV === "development" ? "http://localhost:3001" : "https://jrchess-backend.herokuapp.com/";
 export const socketEndpoint = bePath;
 
+console.log(process.env.NODE_ENV);
+
 export function emitMove(socket: any, room: string, move: CoordinateMove): void {
     socket.emit("request-move", {move, room});
 }
