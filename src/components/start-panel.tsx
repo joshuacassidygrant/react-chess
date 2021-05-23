@@ -1,6 +1,6 @@
 import {FC, ReactElement, useEffect, useState} from "react";
 import {Flex, Box} from "rebass";
-import { chooseRole, joinRoom, requestRandomString } from "../utils";
+import { chooseRole, joinRoom, requestNewUser, requestRandomString, requestRoomData } from "../utils";
 import { RandomButton } from "./random-button";
 import { TextInput } from "./text-input";
 import {useGameContext} from "./game-context";
@@ -30,22 +30,23 @@ export const StartPanel: FC = (): ReactElement => {
         } else if (currentNameInput === "") {
             requestRandomString(2, (txt)=>{setCurrentNameInput(txt)});
         }
-
+        // TODO later: url string requests for invites
+        /*
         if (name && roomname) {
             joinRoom(socket, {roomname, name});
             ctx.dispatch({type: "change-room", payload: roomname})
-            ctx.dispatch({type: "set-user", payload: {name, socket: socket.id , role: -1}});
+            ctx.dispatch({type: "set-user", payload: {data: {name: name}, role: -1}});
 
             const url = new URL(window.location.href);
             url.searchParams.delete("room");
             url.searchParams.delete("name");
             window.history.replaceState(null, "Chess", url.toString())
-        }
+        }*/
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
+        /*const params = new URLSearchParams(window.location.search);
         const roleString = params.get("role");
         if (roleString && user && room) {
             const role = parseInt(roleString);
@@ -57,7 +58,7 @@ export const StartPanel: FC = (): ReactElement => {
                 url.searchParams.delete("role");
                 window.history.replaceState(null, "Chess", url.toString())
             }
-        }
+        }*/
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [roomUsers, user])
 
@@ -85,29 +86,37 @@ export const StartPanel: FC = (): ReactElement => {
                </Flex>
 
                <button onClick={() => {
-                    joinRoom(socket, {room: currentRoomInput, name: currentNameInput});
-                    ctx.dispatch({type: "change-room", payload: currentRoomInput});
-                    ctx.dispatch({type: "set-user", payload: {name: currentNameInput, socket: socket.id , role: -1}});
 
+                    requestNewUser(currentNameInput).then((res) => {
+                        return res.json();
+                    }).then(res => {
+                        ctx.dispatch({type: "set-user", payload: res.user})
+                        joinRoom(socket, currentRoomInput, res.user.id);
+                        return requestRoomData(currentRoomInput);
+                    }).then(res => {
+                        return res.json();
+                    }).then(res => {
+                        ctx.dispatch({type: "change-room", payload: res})
+                    })
                 }}>Join Room</button> 
             </Box>
             ) : (
             <Box>
                 <div>
-                    <button disabled={roomUsers.filter(el => el.role === 0).length > 0} onClick={() => {
+                    <button disabled={Array.from(roomUsers.values()).filter(el => el.role === 0).length > 0} onClick={() => {
                         if (!user || !room) return;
-                        chooseRole(socket, room, 0); 
-                        ctx.dispatch({type: "set-user", payload: {...user, role: 0}});
+                        chooseRole(socket, user.id, room, 0); 
+                        ctx.dispatch({type: "set-user-role", payload: {uid: user.id, role: 0}});
                     }}>Join as White</button>
-                    <button disabled={roomUsers.filter(el => el.role === 1).length > 0} onClick={() => {
+                    <button disabled={Array.from(roomUsers.values()).filter(el => el.role === 1).length > 0} onClick={() => {
                         if (!user || !room) return;
-                        chooseRole(socket, room, 1); 
-                        ctx.dispatch({type: "set-user", payload: {...user, role: 1}});
+                        chooseRole(socket, user.id, room, 1); 
+                        ctx.dispatch({type: "set-user-role", payload: {uid: user.id, role: 1}});
                     }}>Join as Black</button>
                     <button onClick={() => {
                         if (!user || !room) return;
-                        chooseRole(socket, room, 2); 
-                        ctx.dispatch({type: "set-user", payload: {...user, role: 2}});
+                        chooseRole(socket, user.id, room, 2); 
+                        ctx.dispatch({type: "set-user-role", payload: {uid: user.id, role: 2}});
                     }}>Join as Spectator</button>
                     <button onClick={() => {setCurrentRoomInput(""); ctx.dispatch({type: "change-room", payload: null});}}>Leave Room</button>
                 </div>

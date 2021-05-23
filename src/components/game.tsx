@@ -1,16 +1,14 @@
-import React, {FC, ReactElement, useState, useEffect} from "react";
+import {FC, ReactElement, useState, useEffect} from "react";
 import {io} from "socket.io-client";
 
 import {Board} from "./board";
 import {TokenData, Coordinate, GridData, CoordinateMove} from "../types/";
-import {startState} from "../game/start";
-import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual} from "../utils/";
+import {coordinateInList, toMove, emitMove, socketEndpoint, getLegalMoves, checkGameState, coordinatesEqual, requestRoomData, getInitData} from "../utils/";
 import {GameInfo} from "./game-info";
 import { StartPanel } from "./start-panel";
 import { UserList } from "./user-list";
 import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
-import { GameState } from "../types/gameState";
 import { useGameContext} from "./game-context";
 
 
@@ -22,7 +20,7 @@ const width:number = 600;
 
 export const Game: FC = (): ReactElement => {
     const ctx = useGameContext();
-    const {room, user, grid, socket, currentGameState, tokenMap, turn, history} = ctx.state;
+    const {room, user, grid, socket, currentGameState, tokenMap, turn, history, currentUserRole} = ctx.state;
 
     const [selectedToken, setSelectedToken] = useState<string>("");
     const [legalCells, setLegalCells] = useState<Coordinate[]>([]);
@@ -35,35 +33,40 @@ export const Game: FC = (): ReactElement => {
         const socket = io(socketEndpoint);
         const grid = new GridData("chessGrid", height, width, xWidthCells, yHeightCells);
 
-        ctx.dispatch({type: "init", payload: {
-            socket,
-            grid,
-            turn: 0,
-            user: null,
-            room: null,
-            currentGameState: GameState.NOT_STARTED,
-            tokenMap: startState(grid),
-            roomUsers: [],
-            history:new Map()
-        }});
+        getInitData(socket, grid, ctx).then(res => {
+            ctx.dispatch({type: "init", payload: res});
+        });
 
-        ctx.dispatch({type: "start-game"});
-        
         socket.on("approved-move", function(move: CoordinateMove) {
             ctx.dispatch({type: "move", payload: move})
         });
         
         socket.on("users-changed", function(users: any) {
-            ctx.dispatch({type: "set-users", payload: Object.values(users)});
+            ctx.dispatch({type: "set-users", payload: new Map(Object.entries(users))});
         });
 
         socket.on("restart-game", function() {
             ctx.dispatch({type: "start-game"});
         });
 
+        socket.on("room-joined", function(res: any) {
+            const uid: string = res.uid;
+            if (user && uid === user.id) {
+                const room = res.room;
+                requestRoomData(room).then(res => {
+                    return res.json();
+                }).then(res => {
+                    if (res === null) return null;
+                    ctx.dispatch({type: "change-room", payload: res})
+                });
+            }
+
+        })
+
+       
+
         return () => {
-            // clean up goes here
-            socket.emit("leave-room", room);
+            socket.emit("leave-room", {uid: user?.id, room});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -75,7 +78,7 @@ export const Game: FC = (): ReactElement => {
 
     return (
         <div>
-            {!room || !user || user.role === -1 ? (<StartPanel />) :
+            {!room || !user || currentUserRole === -1 ? (<StartPanel />) :
             <Box width={1100} mx="auto">
                 <GameInfo/>
                 <Flex width={1100} mx="auto">
@@ -119,7 +122,7 @@ export const Game: FC = (): ReactElement => {
                         } 
                         tokenClick={
                             (e, id) =>{
-                                if (turn % 2 === user.role && tokenMap[id].player === turn % 2) {
+                                if (turn % 2 === currentUserRole && tokenMap[id].player === turn % 2) {
                                     setSelectedToken(id);
                                     const token = tokenMap[id];
                                     token.isSelected = true;
@@ -133,7 +136,7 @@ export const Game: FC = (): ReactElement => {
                         <ChatBox />
                         <UserList />
                         <button onClick={() => {
-                            socket.emit("leave-room", room);
+                            socket.emit("leave-room", {uid: user.id, room});
                             ctx.dispatch({type: "change-room", payload: null});
                         }}>Leave Room</button>
                     </Box>

@@ -10,7 +10,7 @@ const actions = new Map<string, CommandAction>([
         arg_range: [1,1],
         fn: (args: string[], ctx: any): string => {
             const name = args[0];
-            changeName(ctx.state.socket, ctx.state.room, name);
+            changeName(ctx.state.socket, ctx.state.room, ctx.state.user, name);
             return `Changing name to ${name}`;
         }
     }],

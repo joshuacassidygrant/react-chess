@@ -246,11 +246,11 @@ test ("en passant white pawn", () => {
     doMove(toMove(0, c(2,6), c(2,3)), grid, tokenMap);
     doMove(toMove(1, c(3,1), c(3,3)), grid, tokenMap);
 
-    const specialHistory = new Map<number, CoordinateMove[]>([
-        [0, [{turn: 0, from: [2,6], to: [2,3]}]],
-        [1, [{turn: 1, from: [3,1], to: [3,3]}]],
-    ])
-
+    const specialHistory = [
+        {turn: 0, from: [2,6], to: [2,3]},
+        {turn: 1, from: [3,1], to: [3,3]},
+    ]
+    
     expectLegalMoves("wp2", tokenMap, grid, specialHistory, [c(2,2), c(3,2)]);
 })
 
@@ -259,10 +259,10 @@ test ("en passant black pawn", () => {
     doMove(toMove(1, c(3,1), c(3,4)), grid, tokenMap);
     doMove(toMove(0, c(2,6), c(2,4)), grid, tokenMap);
     
-    const specialHistory = new Map<number, CoordinateMove[]>([
-        [0, [{turn: 0, from: [3,1], to: [3,4]}]],
-        [1, [{turn: 1, from: [2,6], to: [2,4]}]],
-    ])
+    const specialHistory = [
+        {turn: 0, from: [3,1], to: [3,4]},
+        {turn: 1, from: [2,6], to: [2,4]},
+    ]
 
     expectLegalMoves("bp3", tokenMap, grid, specialHistory, [c(3,5), c(2,5)]);
 })
@@ -272,10 +272,10 @@ test ("en passant illegal if last move wasn't a double", () => {
     doMove(toMove(0, c(2,6), c(2,3)), grid, tokenMap);
     doMove(toMove(1, c(3,2), c(3,3)), grid, tokenMap);
 
-    const specialHistory = new Map<number, CoordinateMove[]>([
-        [0, [{turn: 0, from: [2,6], to: [2,3]}]],
-        [1, [{turn: 1, from: [3,2], to: [3,3]}]],
-    ])
+    const specialHistory = [
+        {turn: 0, from: [2,6], to: [2,3]},
+        {turn: 1, from: [3,2], to: [3,3]}
+    ]
 
     expectLegalMoves("wp2", tokenMap, grid, specialHistory, [c(2,2)]);
 })
@@ -286,12 +286,12 @@ test ("en passant illegal if not last move", () => {
     doMove(toMove(1, c(3,1), c(3,4)), grid, tokenMap);
     doMove(toMove(0, c(2,6), c(2,4)), grid, tokenMap);
     
-    const specialHistory = new Map<number, CoordinateMove[]>([
-        [0, [{turn: 0, from: [3,1], to: [3,4]}]],
-        [1, [{turn: 1, from: [2,6], to: [2,4]}]],
-        [2, [{turn: 0, from: [5,1], to: [5,3]}]],
-        [3, [{turn: 1, from: [5,6], to: [5,4]}]],
-    ])
+    const specialHistory = [
+        {turn: 0, from: [3,1], to: [3,4]},
+        {turn: 1, from: [2,6], to: [2,4]},
+        {turn: 0, from: [5,1], to: [5,3]},
+        {turn: 1, from: [5,6], to: [5,4]},
+    ];
 
     expectLegalMoves("bp3", tokenMap, grid, specialHistory, [c(3,5)]);
 })

@@ -1,5 +1,6 @@
 import { coordinateInList } from ".";
-import {TokenMap} from "../types";
+import {CoordinateMove, GridData, TokenMap} from "../types";
+import { doMove } from "./chessUtils";
 
 export function updateTokenData(map: TokenMap, changes: TokenMap): TokenMap {
     return {...map, ...changes}
@@ -15,4 +16,12 @@ export function forecastTokenData(map: TokenMap, changes: TokenMap): TokenMap {
 export function removeTokenData(map: TokenMap, id: string): TokenMap {
     delete map[id];
     return {...map}
+}
+
+export function applyHistory(map: TokenMap, history: CoordinateMove[], grid: GridData): TokenMap {
+    if (!history) return map;
+    history.forEach(move => {
+        doMove(move, grid, map)
+    })
+    return map;
 }

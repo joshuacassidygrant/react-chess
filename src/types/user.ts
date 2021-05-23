@@ -1,5 +1,5 @@
 export type User = {
-    socket: string,
-    name: string,
+    id: string,
+    data: {name: string, id: string}
     role: number
 }

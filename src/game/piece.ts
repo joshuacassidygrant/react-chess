@@ -7,7 +7,7 @@ export type Piece = {
     pointValue: number,
     paths: string[],
     getLegalMoves: (tokenKey: string, tokenMap: TokenMap) => Coordinate[]
-    getSpecialMoves: (tokenKey: string, tokenMap: TokenMap, history: Map<number, CoordinateMove[]>) => [Coordinate, [Coordinate, Coordinate | null][]][]
+    getSpecialMoves: (tokenKey: string, tokenMap: TokenMap, history: CoordinateMove[]) => [Coordinate, [Coordinate, Coordinate | null][]][]
 }
 
 export const Pawn: Piece = {
