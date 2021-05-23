@@ -4,7 +4,8 @@ import { startState } from "../game/start";
 import { CoordinateMove, GridData, User } from "../types";
 import { GameState } from "../types/gameState";
 
-export const socketEndpoint = "http://localhost:3001";
+export const bePath = process.env.BE_PATH || "http://localhost:3001";
+export const socketEndpoint = bePath;
 
 export function emitMove(socket: any, room: string, move: CoordinateMove): void {
     socket.emit("request-move", {move, room});
@@ -27,27 +28,27 @@ export function changeName(socket: any, room: string, user: User, name: string):
 }
 
 export function requestRandomString(words: number, callback: (str: string) => void): void {
-    fetch(`http://localhost:3001/random?n=${words}`)
+    fetch(`${bePath}/random?n=${words}`)
     .then(res => res.text())
     .then(res => callback(res));
 }
 
 export function requestRoomHistory(room: string, callback: (moves: CoordinateMove[]) => void) : void {
-    fetch(`http://localhost:3001/history?room=${room}`)
+    fetch(`${bePath}/history?room=${room}`)
     .then(res => res.json())
     .then(res => callback(res));
 }
 
 export function requestUserReconnect(uid: string, room: string) : Promise<any>  {
-    return fetch(`http://localhost:3001/user?uid=${uid}&&room=${room}`);
+    return fetch(`${bePath}/user?uid=${uid}&&room=${room}`);
 }
 
 export function requestNewUser(name: string) : Promise<any> {
-    return fetch(`http://localhost:3001/user?name=${name}`);
+    return fetch(`${bePath}/user?name=${name}`);
 }
 
 export function requestRoomData(room: string) : Promise<any> {
-    return fetch(`http://localhost:3001/room?room=${room}`)
+    return fetch(`${bePath}/room?room=${room}`)
 }
 
 export function getInitData(socket: any, grid: GridData, ctx: any ) : Promise<State> {
