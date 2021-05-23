@@ -4,7 +4,7 @@ import { startState } from "../game/start";
 import { CoordinateMove, GridData, User } from "../types";
 import { GameState } from "../types/gameState";
 
-export const bePath = process.env.BE_PATH || "http://localhost:3001";
+export const bePath = process.env.NODE_ENV === "development" ? "http://localhost:3001" : "https://jrchess-backend.herokuapp.com/";
 export const socketEndpoint = bePath;
 
 export function emitMove(socket: any, room: string, move: CoordinateMove): void {
