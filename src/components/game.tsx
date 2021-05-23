@@ -10,6 +10,7 @@ import { UserList } from "./user-list";
 import { ChatBox } from "./chat-box";
 import { Box, Flex } from "rebass";
 import { useGameContext} from "./game-context";
+import { RoomDisplay } from "./room-display";
 
 
 // GAME CONSTANTS
@@ -132,7 +133,7 @@ export const Game: FC = (): ReactElement => {
                         }/>
                     </Box>
                     <Box width={300}>
-                        <h3>Room: {room}</h3>
+                        <RoomDisplay />
                         <ChatBox />
                         <UserList />
                         <button onClick={() => {

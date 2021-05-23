@@ -1,4 +1,4 @@
-import React, {FC, ReactElement, useEffect, useState} from "react";
+import {FC, ReactElement, useEffect, useState} from "react";
 import {Flex, Box} from "rebass";
 import styled from "styled-components";
 import {Chat} from "../types";
