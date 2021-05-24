@@ -28,6 +28,11 @@ export function changeName(socket: any, room: string, user: User, name: string):
     socket.emit("request-namechange", {socket: socket.id, uid: user.id, room, name});
 }
 
+export function requestConnect(): Promise<any> {
+    return fetch(`${bePath}/connect`)
+    .then(res => res.json());
+}
+
 export function requestRandomString(words: number, callback: (str: string) => void): void {
     fetch(`${bePath}/random?n=${words}`)
     .then(res => res.text())
