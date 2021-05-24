@@ -25,11 +25,15 @@ function App() {
           !serverStatus && <small>Connecting to server...</small>
         }
       </header>
-      <div className="Main">
-        <GameContextProvider>
-          <Game/>
-        </GameContextProvider>
-      </div>
+      {
+        !!serverStatus && 
+        (<div className="Main">
+          <GameContextProvider>
+            <Game/>
+          </GameContextProvider>
+        </div>)
+      }
+
     </div>
   );
 }
