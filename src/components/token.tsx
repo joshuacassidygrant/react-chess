@@ -18,8 +18,8 @@ export const Token: FC<TokenProps> = React.memo(({id, data, w, h, clicked}): Rea
         <g transform={`translate(${pos.x}, ${pos.y})`} onMouseDown={(e) => clicked(e, id)}>
             <circle fill="rgba(1,1,1,0.2)" r={w/2} cx={w/2} cy={h/2} />
             {
-                data.piece.paths.map(path => (
-                    <path transform={ `scale(${xs}, ${ys})`} d={path} fill={Players[data.player].color} />
+                data.getPiece().paths.map((path, i) => (
+                    <path key={i} transform={ `scale(${xs}, ${ys})`} d={path} fill={Players[data.player].color} />
                 ))
             }
         </g>

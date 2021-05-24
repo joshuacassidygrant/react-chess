@@ -1,11 +1,11 @@
-import React from 'react';
-import reportWebVitals from "./reportWebVitals";
+import * as dotenv from "dotenv"
 import "./App.css";
 import {Game} from "./components/game";
+import { GameContextProvider } from './components/game-context';
+
+dotenv.config();
 
 function App() {
-  // temp
-  reportWebVitals(console.log)
 
   return (
     <div className="App">
@@ -13,7 +13,9 @@ function App() {
         REACT CHESS by JOSHUA
       </header>
       <div className="Main">
-        <Game/>
+        <GameContextProvider>
+          <Game/>
+        </GameContextProvider>
       </div>
     </div>
   );
